@@ -1,0 +1,335 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Layout from '@/components/Layout';
+import { useApi } from '@/lib/clerk-api';
+import { Plus, Trash2 } from 'lucide-react';
+
+interface Customer {
+  id: string;
+  name: string;
+}
+
+interface Job {
+  id: string;
+  jobNumber: string;
+  title: string;
+}
+
+export default function NewInvoicePage() {
+  const api = useApi();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [formData, setFormData] = useState({
+    customerId: '',
+    jobId: '',
+    dueDate: '',
+    notes: '',
+    terms: '',
+    tax: 0,
+    discount: 0,
+  });
+  const [items, setItems] = useState([
+    { description: '', quantity: 1, unitPrice: 0 },
+  ]);
+
+  useEffect(() => {
+    fetchCustomers();
+    fetchJobs();
+    // Set default due date to 30 days from now
+    const defaultDueDate = new Date();
+    defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+    setFormData(prev => ({
+      ...prev,
+      dueDate: defaultDueDate.toISOString().split('T')[0],
+    }));
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await api.get('/customers');
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to fetch customers:', error);
+    }
+  };
+
+  const fetchJobs = async () => {
+    try {
+      const response = await api.get('/jobs');
+      setJobs(response.data);
+    } catch (error) {
+      console.error('Failed to fetch jobs:', error);
+    }
+  };
+
+  const addItem = () => {
+    setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
+  };
+
+  const removeItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const updateItem = (index: number, field: string, value: any) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setItems(newItems);
+  };
+
+  const calculateTotal = () => {
+    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+    const taxAmount = formData.tax || 0;
+    const discountAmount = formData.discount || 0;
+    return subtotal + taxAmount - discountAmount;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await api.post('/invoices', {
+        ...formData,
+        items: items.map(item => ({
+          ...item,
+          total: item.quantity * item.unitPrice,
+        })),
+      });
+      router.push('/invoices');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to create invoice');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Layout>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">New Invoice</h1>
+
+        <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-6">
+            <div>
+              <label htmlFor="customerId" className="block text-sm font-medium text-gray-700">
+                Customer *
+              </label>
+              <select
+                id="customerId"
+                required
+                value={formData.customerId}
+                onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select customer</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="jobId" className="block text-sm font-medium text-gray-700">
+                Job (Optional)
+              </label>
+              <select
+                id="jobId"
+                value={formData.jobId}
+                onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select job</option>
+                {jobs.map((job) => (
+                  <option key={job.id} value={job.id}>
+                    {job.jobNumber} - {job.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700">
+                Due Date *
+              </label>
+              <input
+                type="date"
+                id="dueDate"
+                required
+                value={formData.dueDate}
+                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Items</h3>
+              <button
+                type="button"
+                onClick={addItem}
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Item
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {items.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          required
+                          value={item.description}
+                          onChange={(e) => updateItem(index, 'description', e.target.value)}
+                          className="w-full border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Item description"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          min="1"
+                          required
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                          className="w-20 border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          required
+                          value={item.unitPrice}
+                          onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          className="w-24 border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        ${(item.quantity * item.unitPrice).toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {items.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeItem(index)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
+            <div>
+              <label htmlFor="tax" className="block text-sm font-medium text-gray-700">
+                Tax ($)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                id="tax"
+                value={formData.tax}
+                onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="discount" className="block text-sm font-medium text-gray-700">
+                Discount ($)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                id="discount"
+                value={formData.discount}
+                onChange={(e) => setFormData({ ...formData, discount: parseFloat(e.target.value) || 0 })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <div className="w-full">
+                <p className="text-sm font-medium text-gray-700">Total</p>
+                <p className="text-2xl font-bold text-gray-900">${calculateTotal().toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+              Notes
+            </label>
+            <textarea
+              id="notes"
+              rows={3}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="terms" className="block text-sm font-medium text-gray-700">
+              Terms & Conditions
+            </label>
+            <textarea
+              id="terms"
+              rows={3}
+              value={formData.terms}
+              onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? 'Creating...' : 'Create Invoice'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Layout>
+  );
+}
