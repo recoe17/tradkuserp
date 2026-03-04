@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -17,6 +17,9 @@ import {
   Menu,
   X,
   LogOut,
+  Plus,
+  ChevronDown,
+  Package,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -25,9 +28,30 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const createRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (createRef.current && !createRef.current.contains(e.target as Node)) {
+        setCreateOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const { user } = useUser();
   const { signOut } = useClerk();
+
+  const createOptions = [
+    { name: 'Estimate', href: '/quotations/new', icon: FileText },
+    { name: 'Invoice', href: '/invoices/new', icon: Receipt },
+    { name: 'Customer', href: '/customers/new', icon: Users },
+    { name: 'Job', href: '/jobs/new', icon: Briefcase },
+    { name: 'Bill', href: '/expenses/new', icon: CreditCard },
+    { name: 'Product or Service', href: '/items', icon: Package },
+  ];
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -55,6 +79,37 @@ export default function Layout({ children }: LayoutProps) {
             </button>
           </div>
           <nav className="mt-4 px-2">
+            <div className="mb-4 px-2" ref={createRef}>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(!createOpen)}
+                className="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700"
+              >
+                <span className="flex items-center">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Create new
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${createOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {createOpen && (
+                <div className="mt-1 py-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  {createOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    return (
+                      <Link
+                        key={opt.name}
+                        href={opt.href}
+                        onClick={() => { setCreateOpen(false); setSidebarOpen(false); }}
+                        className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Icon className="mr-3 h-4 w-4 text-gray-500" />
+                        {opt.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -84,6 +139,37 @@ export default function Layout({ children }: LayoutProps) {
             <Image src="/logo.png" alt="MaxVolt Electrical" width={180} height={60} className="object-contain" />
           </div>
           <nav className="mt-4 flex-1 px-2 space-y-1">
+            <div className="mb-4 px-2" ref={createRef}>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(!createOpen)}
+                className="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700"
+              >
+                <span className="flex items-center">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Create new
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${createOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {createOpen && (
+                <div className="mt-1 py-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  {createOptions.map((opt) => {
+                    const Icon = opt.icon;
+                    return (
+                      <Link
+                        key={opt.name}
+                        href={opt.href}
+                        onClick={() => setCreateOpen(false)}
+                        className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Icon className="mr-3 h-4 w-4 text-gray-500" />
+                        {opt.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             {navigation.map((item) => {
               const Icon = item.icon;
               return (

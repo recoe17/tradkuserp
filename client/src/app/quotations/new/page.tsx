@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Search } from 'lucide-react';
 
 interface Customer {
   id: string;
@@ -26,9 +26,10 @@ interface CatalogItem {
 
 interface LineItem {
   description: string;
+  notes?: string;
   quantity: number;
   unitPrice: number;
-  catalogItemId?: string; // when set, description is locked, only price editable
+  catalogItemId?: string;
 }
 
 export default function NewQuotationPage() {
@@ -48,11 +49,13 @@ export default function NewQuotationPage() {
     includeVat: true,
   });
   const [items, setItems] = useState<LineItem[]>([
-    { description: '', quantity: 1, unitPrice: 0 },
+    { description: '', notes: '', quantity: 1, unitPrice: 0 },
   ]);
   const [creatingCatalogIndex, setCreatingCatalogIndex] = useState<number | null>(null);
   const [activeItemRow, setActiveItemRow] = useState<number | null>(null);
   const [itemSearchQuery, setItemSearchQuery] = useState('');
+  const justSelectedRef = useRef(false);
+  const itemSearchQueryRef = useRef('');
 
   useEffect(() => {
     fetchCustomers();
@@ -88,17 +91,18 @@ export default function NewQuotationPage() {
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
+    setItems([...items, { description: '', notes: '', quantity: 1, unitPrice: 0 }]);
   };
 
   const selectCatalogItem = (index: number, catalogItemId: string) => {
     const newItems = [...items];
     if (catalogItemId === '__custom__') {
-      newItems[index] = { description: '', quantity: newItems[index].quantity, unitPrice: 0 };
+      newItems[index] = { ...newItems[index], description: '', unitPrice: 0 };
     } else {
       const catalog = catalogItems.find((c) => c.id === catalogItemId);
       if (catalog) {
         newItems[index] = {
+          ...newItems[index],
           description: catalog.description,
           quantity: newItems[index].quantity,
           unitPrice: catalog.unitPrice,
@@ -112,6 +116,7 @@ export default function NewQuotationPage() {
   const createCatalogItemFromSearch = async (index: number, description: string) => {
     const row = items[index];
     if (!description.trim()) return;
+    justSelectedRef.current = true;
     try {
       setCreatingCatalogIndex(index);
       const response = await api.post('/quotation-items', {
@@ -132,6 +137,7 @@ export default function NewQuotationPage() {
   };
 
   const handleSelectItem = (index: number, catalog: CatalogItem) => {
+    justSelectedRef.current = true;
     selectCatalogItem(index, catalog.id);
     setActiveItemRow(null);
     setItemSearchQuery('');
@@ -262,7 +268,8 @@ export default function NewQuotationPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -286,28 +293,40 @@ export default function NewQuotationPage() {
                     return (
                       <tr key={index}>
                         <td className="px-4 py-3 relative">
-                          <input
-                            type="text"
-                            required
-                            value={activeItemRow === index ? itemSearchQuery : (item.description || '')}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setItemSearchQuery(v);
-                              updateItem(index, 'description', v);
-                              if (activeItemRow !== index) setActiveItemRow(index);
-                            }}
-                            onFocus={() => {
-                              setActiveItemRow(index);
-                              setItemSearchQuery(item.description || '');
-                            }}
-                            onBlur={() => {
-                              setTimeout(() => setActiveItemRow(null), 200);
-                            }}
-                            className="w-full min-w-[180px] border border-gray-300 rounded-md py-1.5 px-2 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-                            placeholder="Type to search catalog, create new, or type freely"
-                          />
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                              type="text"
+                              required
+                              value={activeItemRow === index ? itemSearchQuery : (item.description || '')}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                itemSearchQueryRef.current = v;
+                                setItemSearchQuery(v);
+                                if (activeItemRow !== index) setActiveItemRow(index);
+                              }}
+                              onFocus={() => {
+                                setActiveItemRow(index);
+                                const d = item.description || '';
+                                itemSearchQueryRef.current = d;
+                                setItemSearchQuery(d);
+                              }}
+                              onBlur={() => {
+                                const q = itemSearchQueryRef.current;
+                                setTimeout(() => {
+                                  if (!justSelectedRef.current) {
+                                    updateItem(index, 'description', q);
+                                  }
+                                  justSelectedRef.current = false;
+                                  setActiveItemRow(null);
+                                }, 200);
+                              }}
+                              className="w-full min-w-[200px] pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                              placeholder="Type an item name"
+                            />
+                          </div>
                           {activeItemRow === index && (
-                            <div className="absolute z-10 mt-1 w-full min-w-[200px] max-h-48 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                            <div className="absolute z-10 mt-1 w-full min-w-[280px] max-h-56 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
                               {matches.length > 0 ? (
                                 matches.map((c) => (
                                   <button
@@ -317,9 +336,10 @@ export default function NewQuotationPage() {
                                       e.preventDefault();
                                       handleSelectItem(index, c);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 last:border-0"
+                                    className="w-full flex items-center justify-between px-3 py-2.5 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-0 text-left"
                                   >
-                                    {c.description} <span className="text-gray-500">(${Number(c.unitPrice).toFixed(2)})</span>
+                                    <span>{c.description}</span>
+                                    <span className="text-gray-500 font-medium ml-2">${Number(c.unitPrice).toFixed(2)}</span>
                                   </button>
                                 ))
                               ) : null}
@@ -345,6 +365,15 @@ export default function NewQuotationPage() {
                               )}
                             </div>
                           )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="text"
+                            value={item.notes || ''}
+                            onChange={(e) => updateItem(index, 'notes', e.target.value)}
+                            className="w-full min-w-[180px] border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                            placeholder="Enter item description"
+                          />
                         </td>
                         <td className="px-4 py-3">
                           <input
