@@ -50,6 +50,9 @@ export default function NewInvoicePage() {
   const [items, setItems] = useState<LineItem[]>([
     { description: '', quantity: 1, unitPrice: 0 },
   ]);
+  const [creatingCatalogIndex, setCreatingCatalogIndex] = useState<number | null>(null);
+  const [activeItemRow, setActiveItemRow] = useState<number | null>(null);
+  const [itemSearchQuery, setItemSearchQuery] = useState('');
 
   useEffect(() => {
     fetchCustomers();
@@ -107,6 +110,34 @@ export default function NewInvoicePage() {
       }
     }
     setItems(newItems);
+  };
+
+  const createCatalogItemFromSearch = async (index: number, description: string) => {
+    const row = items[index];
+    if (!description.trim()) return;
+    try {
+      setCreatingCatalogIndex(index);
+      const response = await api.post('/quotation-items', {
+        description: description.trim(),
+        unitPrice: row.unitPrice || 0,
+        category: null,
+      });
+      const newItem: CatalogItem = response.data;
+      setCatalogItems((prev) => [...prev, newItem]);
+      selectCatalogItem(index, newItem.id);
+      setActiveItemRow(null);
+      setItemSearchQuery('');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to create catalog item');
+    } finally {
+      setCreatingCatalogIndex(null);
+    }
+  };
+
+  const handleSelectItem = (index: number, catalog: CatalogItem) => {
+    selectCatalogItem(index, catalog.id);
+    setActiveItemRow(null);
+    setItemSearchQuery('');
   };
 
   const addItem = () => {
@@ -239,7 +270,7 @@ export default function NewInvoicePage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -247,17 +278,67 @@ export default function NewInvoicePage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {items.map((item, index) => (
+                  {items.map((item, index) => {
+                    const q = activeItemRow === index ? itemSearchQuery : '';
+                    const matches =
+                      q.length > 0
+                        ? catalogItems.filter((c) =>
+                            c.description.toLowerCase().includes(q.toLowerCase())
+                          )
+                        : catalogItems;
+                    const hasExactMatch = catalogItems.some(
+                      (c) => c.description.toLowerCase() === q.toLowerCase()
+                    );
+                    const showCreate = q.trim().length >= 2 && !hasExactMatch;
+
+                    return (
                     <tr key={index}>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 relative">
                         <input
                           type="text"
                           required
-                          value={item.description}
-                          onChange={(e) => updateItem(index, 'description', e.target.value)}
-                          className="w-full border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-red-500 focus:border-red-500"
-                          placeholder="Item description"
+                          value={activeItemRow === index ? itemSearchQuery : (item.description || '')}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setItemSearchQuery(v);
+                            updateItem(index, 'description', v);
+                            if (activeItemRow !== index) setActiveItemRow(index);
+                          }}
+                          onFocus={() => {
+                            setActiveItemRow(index);
+                            setItemSearchQuery(item.description || '');
+                          }}
+                          onBlur={() => setTimeout(() => setActiveItemRow(null), 200)}
+                          className="w-full min-w-[180px] border border-gray-300 rounded-md py-1.5 px-2 text-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                          placeholder="Type to search catalog, create new, or type freely"
                         />
+                        {activeItemRow === index && (
+                          <div className="absolute z-10 mt-1 w-full min-w-[200px] max-h-48 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                            {matches.length > 0 && matches.map((c) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                onMouseDown={(e) => { e.preventDefault(); handleSelectItem(index, c); }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 border-b border-gray-100 last:border-0"
+                              >
+                                {c.description} <span className="text-gray-500">(${Number(c.unitPrice).toFixed(2)})</span>
+                              </button>
+                            ))}
+                            {showCreate && (
+                              <button
+                                type="button"
+                                disabled={creatingCatalogIndex === index}
+                                onMouseDown={(e) => { e.preventDefault(); createCatalogItemFromSearch(index, q); }}
+                                className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 font-medium border-t border-gray-100"
+                              >
+                                {creatingCatalogIndex === index ? 'Creating...' : `+ Create "${q.trim()}" as new item`}
+                              </button>
+                            )}
+                            {q.length > 0 && matches.length === 0 && !showCreate && (
+                              <div className="px-3 py-2 text-sm text-gray-500">Type 2+ characters to create new item</div>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <input
@@ -295,7 +376,7 @@ export default function NewInvoicePage() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                  );})}
                 </tbody>
               </table>
             </div>
