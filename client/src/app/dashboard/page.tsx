@@ -46,8 +46,8 @@ export default function DashboardPage() {
       name: 'Total Paid',
       value: `$${stats.totalPaid.toFixed(2)}`,
       icon: TrendingUp,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
     },
     {
       name: 'Total Expenses',

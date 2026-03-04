@@ -94,7 +94,7 @@ export default function FinancesPage() {
             <div className="flex items-end">
               <button
                 onClick={applyFilter}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Apply Filter
               </button>
@@ -127,8 +127,8 @@ export default function FinancesPage() {
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-blue-50 rounded-md p-3">
-                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                <div className="flex-shrink-0 bg-red-50 rounded-md p-3">
+                  <TrendingUp className="h-6 w-6 text-red-600" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>

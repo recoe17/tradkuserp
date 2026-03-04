@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String
+  address     String?
+  company     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  jobs        Job[]
+  quotations  Quotation[]
+  invoices    Invoice[]
+}
+
+model Job {
+  id          String      @id @default(cuid())
+  jobNumber   String      @unique
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  title       String
+  description String?
+  serviceType String
+  status      String      @default("pending")
+  priority    String      @default("medium")
+  startDate   DateTime?
+  endDate     DateTime?
+  location    String?
+  assignedTo  String?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  quotations  Quotation[]
+  invoices    Invoice[]
+  expenses    Expense[]
+}
+
+model Quotation {
+  id            String   @id @default(cuid())
+  quotationNumber String @unique
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  jobId         String?
+  job           Job?     @relation(fields: [jobId], references: [id])
+  status        String   @default("draft")
+  validUntil    DateTime?
+  subtotal      Decimal  @default(0)
+  tax           Decimal  @default(0)
+  discount      Decimal  @default(0)
+  total         Decimal  @default(0)
+  notes         String?
+  terms         String?
+  items         Json
+  invoices      Invoice[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sentAt        DateTime?
+  acceptedAt    DateTime?
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  quotationId   String?
+  quotation     Quotation? @relation(fields: [quotationId], references: [id])
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  jobId         String?
+  job           Job?     @relation(fields: [jobId], references: [id])
+  status        String   @default("draft")
+  issueDate     DateTime @default(now())
+  dueDate       DateTime
+  subtotal      Decimal  @default(0)
+  tax           Decimal  @default(0)
+  discount      Decimal  @default(0)
+  total         Decimal  @default(0)
+  paidAmount    Decimal  @default(0)
+  balance       Decimal  @default(0)
+  notes         String?
+  terms         String?
+  items         Json
+  payments      Payment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  paidAt        DateTime?
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  amount      Decimal
+  method      String
+  reference   String?
+  notes       String?
+  paidAt      DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  jobId       String?
+  job         Job?     @relation(fields: [jobId], references: [id])
+  category    String
+  description String
+  amount      Decimal
+  date        DateTime @default(now())
+  receipt     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model QuotationItem {
+  id          String   @id @default(cuid())
+  description String
+  unitPrice   Decimal
+  category    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FinancialRecord {
+  id          String   @id @default(cuid())
+  type        String
+  category    String
+  description String
+  amount      Decimal
+  date        DateTime @default(now())
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

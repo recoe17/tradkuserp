@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useUser, useClerk } from '@clerk/nextjs';
 import {
@@ -10,7 +11,9 @@ import {
   Briefcase,
   FileText,
   Receipt,
+  FileCheck,
   DollarSign,
+  CreditCard,
   Menu,
   X,
   LogOut,
@@ -32,6 +35,8 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Jobs', href: '/jobs', icon: Briefcase },
     { name: 'Quotations', href: '/quotations', icon: FileText },
     { name: 'Invoices', href: '/invoices', icon: Receipt },
+    { name: 'Receipts', href: '/receipts', icon: FileCheck },
+    { name: 'Expenses', href: '/expenses', icon: CreditCard },
     { name: 'Finances', href: '/finances', icon: DollarSign },
   ];
 
@@ -43,8 +48,8 @@ export default function Layout({ children }: LayoutProps) {
       <div className={`fixed inset-0 z-50 lg:hidden ${sidebarOpen ? '' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-xl">
-          <div className="flex h-16 items-center justify-between px-4 border-b">
-            <h1 className="text-xl font-bold text-blue-600">MaxVolt</h1>
+          <div className="flex h-20 items-center justify-between px-4 border-b bg-white">
+            <Image src="/logo.png" alt="MaxVolt Electrical" width={150} height={50} className="object-contain" />
             <button onClick={() => setSidebarOpen(false)} className="text-gray-500">
               <X className="h-6 w-6" />
             </button>
@@ -59,7 +64,7 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-1 ${
                     isActive(item.href)
-                      ? 'bg-blue-50 text-blue-600'
+                      ? 'bg-red-50 text-red-600'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -75,8 +80,8 @@ export default function Layout({ children }: LayoutProps) {
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
-          <div className="flex h-16 items-center px-4 border-b">
-            <h1 className="text-xl font-bold text-blue-600">MaxVolt</h1>
+          <div className="flex h-20 items-center justify-center px-4 border-b bg-white">
+            <Image src="/logo.png" alt="MaxVolt Electrical" width={180} height={60} className="object-contain" />
           </div>
           <nav className="mt-4 flex-1 px-2 space-y-1">
             {navigation.map((item) => {
@@ -87,7 +92,7 @@ export default function Layout({ children }: LayoutProps) {
                   href={item.href}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${
                     isActive(item.href)
-                      ? 'bg-blue-50 text-blue-600'
+                      ? 'bg-red-50 text-red-600'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -123,12 +128,12 @@ export default function Layout({ children }: LayoutProps) {
         <div className="sticky top-0 z-10 flex h-16 bg-white border-b border-gray-200 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="px-4 text-gray-500 focus:outline-none"
+            className="px-4 text-gray-600 focus:outline-none"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <div className="flex flex-1 items-center justify-center">
-            <h1 className="text-lg font-semibold text-gray-900">MaxVolt</h1>
+          <div className="flex flex-1 items-center justify-center pr-10">
+            <Image src="/logo.png" alt="MaxVolt" width={120} height={40} className="object-contain" />
           </div>
         </div>
 

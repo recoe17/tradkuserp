@@ -1,11 +1,15 @@
 import twilio from 'twilio';
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export async function sendQuotationWhatsApp(quotation: any) {
+  if (!client) {
+    throw new Error('WhatsApp service not configured. Please set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.');
+  }
+  
   try {
     const message = `
 *Quotation ${quotation.quotationNumber}*
@@ -40,6 +44,10 @@ ${process.env.COMPANY_PHONE}
 }
 
 export async function sendInvoiceWhatsApp(invoice: any) {
+  if (!client) {
+    throw new Error('WhatsApp service not configured. Please set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.');
+  }
+  
   try {
     const message = `
 *Invoice ${invoice.invoiceNumber}*

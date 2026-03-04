@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MaxVolt - Electrical Company Management",
-  description: "Manage jobs, quotations, invoices, and finances for your electrical company",
+  title: "MaxVolt Electrical (Pvt) Ltd - The best way to power up",
+  description: "Solar Power Systems, Solar Pumps, Solar Geysers, House Wiring, Security Systems, Lighting Solutions - Bulawayo, Zimbabwe",
 };
 
 export default function RootLayout({

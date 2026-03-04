@@ -17,28 +17,44 @@ interface Job {
   title: string;
 }
 
+interface CatalogItem {
+  id: string;
+  description: string;
+  unitPrice: number;
+  category: string | null;
+}
+
+interface LineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  catalogItemId?: string;
+}
+
 export default function NewInvoicePage() {
   const api = useApi();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [formData, setFormData] = useState({
     customerId: '',
     jobId: '',
     dueDate: '',
     notes: '',
     terms: '',
-    tax: 0,
     discount: 0,
+    includeVat: true,
   });
-  const [items, setItems] = useState([
+  const [items, setItems] = useState<LineItem[]>([
     { description: '', quantity: 1, unitPrice: 0 },
   ]);
 
   useEffect(() => {
     fetchCustomers();
     fetchJobs();
+    fetchCatalogItems();
     // Set default due date to 30 days from now
     const defaultDueDate = new Date();
     defaultDueDate.setDate(defaultDueDate.getDate() + 30);
@@ -66,6 +82,33 @@ export default function NewInvoicePage() {
     }
   };
 
+  const fetchCatalogItems = async () => {
+    try {
+      const response = await api.get('/quotation-items');
+      setCatalogItems(response.data);
+    } catch (error) {
+      console.error('Failed to fetch catalog items:', error);
+    }
+  };
+
+  const selectCatalogItem = (index: number, catalogItemId: string) => {
+    const newItems = [...items];
+    if (catalogItemId === '__custom__') {
+      newItems[index] = { description: '', quantity: newItems[index].quantity, unitPrice: 0 };
+    } else {
+      const catalog = catalogItems.find((c) => c.id === catalogItemId);
+      if (catalog) {
+        newItems[index] = {
+          description: catalog.description,
+          quantity: newItems[index].quantity,
+          unitPrice: catalog.unitPrice,
+          catalogItemId: catalog.id,
+        };
+      }
+    }
+    setItems(newItems);
+  };
+
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unitPrice: 0 }]);
   };
@@ -80,12 +123,22 @@ export default function NewInvoicePage() {
     setItems(newItems);
   };
 
+  const VAT_RATE = 0.155; // 15.5% VAT
+  
+  const calculateVat = () => {
+    if (!formData.includeVat) return 0;
+    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+    return subtotal * VAT_RATE;
+  };
+
   const calculateTotal = () => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    const taxAmount = formData.tax || 0;
+    const vatAmount = calculateVat();
     const discountAmount = formData.discount || 0;
-    return subtotal + taxAmount - discountAmount;
+    return subtotal + vatAmount - discountAmount;
   };
+
+  const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +147,7 @@ export default function NewInvoicePage() {
     try {
       await api.post('/invoices', {
         ...formData,
+        tax: calculateVat(),
         items: items.map(item => ({
           ...item,
           total: item.quantity * item.unitPrice,
@@ -109,7 +163,7 @@ export default function NewInvoicePage() {
 
   return (
     <Layout>
-      <div>
+      <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">New Invoice</h1>
 
         <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
@@ -123,7 +177,7 @@ export default function NewInvoicePage() {
                 required
                 value={formData.customerId}
                 onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               >
                 <option value="">Select customer</option>
                 {customers.map((customer) => (
@@ -142,7 +196,7 @@ export default function NewInvoicePage() {
                 id="jobId"
                 value={formData.jobId}
                 onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               >
                 <option value="">Select job</option>
                 {jobs.map((job) => (
@@ -163,7 +217,7 @@ export default function NewInvoicePage() {
                 required
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               />
             </div>
           </div>
@@ -174,7 +228,7 @@ export default function NewInvoicePage() {
               <button
                 type="button"
                 onClick={addItem}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Add Item
@@ -201,7 +255,7 @@ export default function NewInvoicePage() {
                           required
                           value={item.description}
                           onChange={(e) => updateItem(index, 'description', e.target.value)}
-                          className="w-full border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-red-500 focus:border-red-500"
                           placeholder="Item description"
                         />
                       </td>
@@ -212,7 +266,7 @@ export default function NewInvoicePage() {
                           required
                           value={item.quantity}
                           onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                          className="w-20 border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="w-20 border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-red-500 focus:border-red-500"
                         />
                       </td>
                       <td className="px-4 py-3">
@@ -223,7 +277,7 @@ export default function NewInvoicePage() {
                           required
                           value={item.unitPrice}
                           onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          className="w-24 border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                          className="w-24 border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-red-500 focus:border-red-500"
                         />
                       </td>
                       <td className="px-4 py-3 text-sm font-medium">
@@ -247,23 +301,21 @@ export default function NewInvoicePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
             <div>
-              <label htmlFor="tax" className="block text-sm font-medium text-gray-700">
-                Tax ($)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                id="tax"
-                value={formData.tax}
-                onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  id="includeVat"
+                  checked={formData.includeVat}
+                  onChange={(e) => setFormData({ ...formData, includeVat: e.target.checked })}
+                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                />
+                <label htmlFor="includeVat" className="ml-2 block text-sm font-medium text-gray-700">
+                  Include VAT (15.5%)
+                </label>
+              </div>
 
-            <div>
               <label htmlFor="discount" className="block text-sm font-medium text-gray-700">
                 Discount ($)
               </label>
@@ -274,14 +326,30 @@ export default function NewInvoicePage() {
                 id="discount"
                 value={formData.discount}
                 onChange={(e) => setFormData({ ...formData, discount: parseFloat(e.target.value) || 0 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               />
             </div>
 
-            <div className="flex items-end">
-              <div className="w-full">
-                <p className="text-sm font-medium text-gray-700">Total</p>
-                <p className="text-2xl font-bold text-gray-900">${calculateTotal().toFixed(2)}</p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between py-1">
+                <span className="text-sm text-gray-600">Subtotal:</span>
+                <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
+              </div>
+              {formData.includeVat && (
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">VAT (15.5%):</span>
+                  <span className="text-sm font-medium">${calculateVat().toFixed(2)}</span>
+                </div>
+              )}
+              {formData.discount > 0 && (
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">Discount:</span>
+                  <span className="text-sm font-medium text-red-600">-${formData.discount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-2 border-t border-gray-200 mt-2">
+                <span className="text-lg font-bold text-gray-900">Total:</span>
+                <span className="text-lg font-bold text-red-600">${calculateTotal().toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -295,7 +363,7 @@ export default function NewInvoicePage() {
               rows={3}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
             />
           </div>
 
@@ -308,7 +376,7 @@ export default function NewInvoicePage() {
               rows={3}
               value={formData.terms}
               onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
             />
           </div>
 
@@ -323,7 +391,7 @@ export default function NewInvoicePage() {
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
               {loading ? 'Creating...' : 'Create Invoice'}
             </button>

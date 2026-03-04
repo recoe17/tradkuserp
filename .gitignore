@@ -47,3 +47,4 @@ server/prisma/migrations/
 # Misc
 *.log
 .cache
+.vercel
