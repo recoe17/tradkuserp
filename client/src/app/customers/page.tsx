@@ -38,14 +38,14 @@ export default function CustomersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this customer?')) return;
+    if (!confirm('Are you sure you want to delete this customer? This will also delete all their jobs, quotations, and invoices.')) return;
 
     try {
       await api.delete(`/customers/${id}`);
       fetchCustomers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete customer:', error);
-      alert('Failed to delete customer');
+      alert(error.response?.data?.message || 'Failed to delete customer');
     }
   };
 

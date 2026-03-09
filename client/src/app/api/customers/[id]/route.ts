@@ -77,12 +77,25 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await prisma.customer.delete({
-      where: { id }
+
+    await prisma.$transaction(async (tx) => {
+      const customer = await tx.customer.findUnique({ where: { id }, include: { invoices: { select: { id: true } }, quotations: { select: { id: true } }, jobs: { select: { id: true } } } });
+      if (!customer) throw new Error('Customer not found');
+
+      const invoiceIds = customer.invoices.map((i) => i.id);
+      const jobIds = customer.jobs.map((j) => j.id);
+
+      await tx.payment.deleteMany({ where: { invoiceId: { in: invoiceIds } } });
+      await tx.invoice.deleteMany({ where: { id: { in: invoiceIds } } });
+      await tx.quotation.deleteMany({ where: { customerId: id } });
+      await tx.expense.deleteMany({ where: { jobId: { in: jobIds } } });
+      await tx.job.deleteMany({ where: { customerId: id } });
+      await tx.customer.delete({ where: { id } });
     });
 
     return NextResponse.json({ message: 'Customer deleted successfully' });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    const message = error?.message || error?.meta?.cause || 'Failed to delete customer. Customer may have related jobs, quotations, or invoices.';
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
