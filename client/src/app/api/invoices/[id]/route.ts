@@ -90,9 +90,10 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await prisma.invoice.delete({
-      where: { id }
-    });
+    await prisma.$transaction([
+      prisma.payment.deleteMany({ where: { invoiceId: id } }),
+      prisma.invoice.delete({ where: { id } })
+    ]);
 
     return NextResponse.json({ message: 'Invoice deleted successfully' });
   } catch (error: any) {

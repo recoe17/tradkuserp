@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
+import { formatAmount, getCurrencySymbol } from '@/lib/currency';
 import { Plus, Trash2, Search } from 'lucide-react';
 
 interface Customer {
@@ -43,6 +44,7 @@ export default function NewQuotationPage() {
     customerId: '',
     jobId: '',
     validUntil: '',
+    currency: 'USD' as 'USD' | 'ZIG' | 'ZAR',
     notes: '',
     terms: '',
     discount: 0,
@@ -168,25 +170,42 @@ export default function NewQuotationPage() {
     return subtotal + vatAmount - discountAmount;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitQuotation = async (asDraft: boolean) => {
     setLoading(true);
 
     try {
+      const lineItems = asDraft
+        ? (items.some(i => i.description?.trim()) ? items : [{ description: '(Draft - add items)', notes: '', quantity: 1, unitPrice: 0 }])
+        : items;
+
       await api.post('/quotations', {
         ...formData,
         tax: calculateVat(),
-        items: items.map(item => ({
+        items: lineItems.map((item: LineItem) => ({
           ...item,
           total: item.quantity * item.unitPrice,
         })),
       });
       router.push('/quotations');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to create quotation');
+      alert(error.response?.data?.message || 'Failed to save quotation');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitQuotation(false);
+  };
+
+  const handleSaveDraft = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!formData.customerId) {
+      alert('Please select a customer');
+      return;
+    }
+    submitQuotation(true);
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
@@ -222,6 +241,7 @@ export default function NewQuotationPage() {
               <label htmlFor="jobId" className="block text-sm font-medium text-gray-700">
                 Job (Optional)
               </label>
+              <p className="text-xs text-gray-500 mb-1">Link to a project for tracking</p>
               <select
                 id="jobId"
                 value={formData.jobId}
@@ -234,6 +254,22 @@ export default function NewQuotationPage() {
                     {job.jobNumber} - {job.title}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="currency" className="block text-sm font-medium text-gray-700">
+                Currency
+              </label>
+              <select
+                id="currency"
+                value={formData.currency}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'USD' | 'ZIG' | 'ZAR' })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
+              >
+                <option value="USD">USD ($)</option>
+                <option value="ZIG">ZIG (Z$)</option>
+                <option value="ZAR">ZAR (R)</option>
               </select>
             </div>
 
@@ -264,8 +300,8 @@ export default function NewQuotationPage() {
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+            <div className="overflow-x-auto overflow-y-visible">
+              <table className="min-w-full divide-y divide-gray-200" style={{ overflow: 'visible' }}>
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
@@ -326,8 +362,10 @@ export default function NewQuotationPage() {
                             />
                           </div>
                           {activeItemRow === index && (
-                            <div className="absolute z-10 mt-1 w-full min-w-[280px] max-h-56 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
-                              {matches.length > 0 ? (
+                            <div className="absolute z-[100] mt-1 w-full min-w-[280px] max-h-56 overflow-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                              {(catalogItems.length === 0 && q.length === 0) ? (
+                                <div className="px-3 py-2 text-sm text-gray-500">Add items in Products & Services first</div>
+                              ) : matches.length > 0 ? (
                                 matches.map((c) => (
                                   <button
                                     key={c.id}
@@ -339,7 +377,7 @@ export default function NewQuotationPage() {
                                     className="w-full flex items-center justify-between px-3 py-2.5 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-0 text-left"
                                   >
                                     <span>{c.description}</span>
-                                    <span className="text-gray-500 font-medium ml-2">${Number(c.unitPrice).toFixed(2)}</span>
+                                    <span className="text-gray-500 font-medium ml-2">{formatAmount(Number(c.unitPrice), formData.currency)}</span>
                                   </button>
                                 ))
                               ) : null}
@@ -398,7 +436,7 @@ export default function NewQuotationPage() {
                           />
                         </td>
                         <td className="px-4 py-3 text-sm font-medium">
-                          ${(item.quantity * item.unitPrice).toFixed(2)}
+                          {formatAmount(item.quantity * item.unitPrice, formData.currency)}
                         </td>
                         <td className="px-4 py-3">
                           {items.length > 1 && (
@@ -435,7 +473,7 @@ export default function NewQuotationPage() {
               </div>
 
               <label htmlFor="discount" className="block text-sm font-medium text-gray-700">
-                Discount ($)
+                Discount ({getCurrencySymbol(formData.currency)})
               </label>
               <input
                 type="number"
@@ -451,23 +489,23 @@ export default function NewQuotationPage() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex justify-between py-1">
                 <span className="text-sm text-gray-600">Subtotal:</span>
-                <span className="text-sm font-medium">${subtotal.toFixed(2)}</span>
+                <span className="text-sm font-medium">{formatAmount(subtotal, formData.currency)}</span>
               </div>
               {formData.includeVat && (
                 <div className="flex justify-between py-1">
                   <span className="text-sm text-gray-600">VAT (15.5%):</span>
-                  <span className="text-sm font-medium">${calculateVat().toFixed(2)}</span>
+                  <span className="text-sm font-medium">{formatAmount(calculateVat(), formData.currency)}</span>
                 </div>
               )}
               {formData.discount > 0 && (
                 <div className="flex justify-between py-1">
                   <span className="text-sm text-gray-600">Discount:</span>
-                  <span className="text-sm font-medium text-red-600">-${formData.discount.toFixed(2)}</span>
+                  <span className="text-sm font-medium text-red-600">-{formatAmount(formData.discount, formData.currency)}</span>
                 </div>
               )}
               <div className="flex justify-between py-2 border-t border-gray-200 mt-2">
                 <span className="text-lg font-bold text-gray-900">Total:</span>
-                <span className="text-lg font-bold text-red-600">${calculateTotal().toFixed(2)}</span>
+                <span className="text-lg font-bold text-red-600">{formatAmount(calculateTotal(), formData.currency)}</span>
               </div>
             </div>
           </div>
@@ -505,6 +543,14 @@ export default function NewQuotationPage() {
               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
             >
               Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={loading}
+              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Save as Draft'}
             </button>
             <button
               type="submit"

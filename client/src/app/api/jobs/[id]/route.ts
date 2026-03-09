@@ -31,6 +31,33 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getAuthUser();
+  if (!user) return unauthorizedResponse();
+
+  try {
+    const { id } = await params;
+    const { status } = await request.json();
+
+    if (!status || !['pending', 'in_progress', 'completed', 'cancelled'].includes(status)) {
+      return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
+    }
+
+    const job = await prisma.job.update({
+      where: { id },
+      data: { status },
+      include: { customer: true }
+    });
+
+    return NextResponse.json(job);
+  } catch (error: any) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   if (!user) return unauthorizedResponse();
 
   try {
-    const { quotationId, customerId, jobId, dueDate, items, notes, terms, tax, discount } = await request.json();
+    const { quotationId, customerId, jobId, dueDate, items, notes, terms, tax, discount, currency } = await request.json();
 
     const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = tax || 0;
@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
         tax: taxAmount,
         discount: discountAmount,
         total,
-        balance: total
+        balance: total,
+        currency: ['USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'USD'
       },
       include: {
         customer: true,

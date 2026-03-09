@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { formatAmount } from '@/lib/currency';
 
 export async function POST(
   request: NextRequest,
@@ -37,7 +38,7 @@ export async function POST(
         `Hello ${quotation.customer.name},\n\n` +
         `Thank you for your interest in MaxVolt Electrical.\n\n` +
         `Here are the details for Quotation ${quotation.quotationNumber}:\n` +
-        `Total Amount: $${Number(quotation.total).toFixed(2)}\n` +
+        `Total Amount: ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}\n` +
         `${quotation.validUntil ? `Valid Until: ${new Date(quotation.validUntil).toLocaleDateString()}\n` : ''}` +
         `\nPlease let us know if you have any questions.\n\n` +
         `Best regards,\nMaxVolt Electrical (Pvt) Ltd`
@@ -58,7 +59,7 @@ export async function POST(
       `Hello ${quotation.customer.name},\n\n` +
       `Thank you for your interest in MaxVolt Electrical.\n\n` +
       `Quotation: ${quotation.quotationNumber}\n` +
-      `Total: $${Number(quotation.total).toFixed(2)}\n` +
+      `Total: ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}\n` +
       `${quotation.validUntil ? `Valid Until: ${new Date(quotation.validUntil).toLocaleDateString()}\n` : ''}` +
       `\nPlease contact us for more details.\n\n` +
       `MaxVolt Electrical (Pvt) Ltd`;

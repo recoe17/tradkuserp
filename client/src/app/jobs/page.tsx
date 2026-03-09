@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { Plus, Search, Edit, Trash2, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Play, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
@@ -52,6 +52,15 @@ export default function JobsPage() {
       fetchJobs();
     } catch (error) {
       alert('Failed to delete job');
+    }
+  };
+
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    try {
+      await api.patch(`/jobs/${id}`, { status: newStatus });
+      fetchJobs();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -156,16 +165,36 @@ export default function JobsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-wrap gap-2">
+                      {job.status === 'pending' && (
+                        <button
+                          onClick={() => handleStatusUpdate(job.id, 'in_progress')}
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md"
+                        >
+                          <Play className="h-4 w-4 mr-1" />
+                          In Progress
+                        </button>
+                      )}
+                      {(job.status === 'pending' || job.status === 'in_progress') && (
+                        <button
+                          onClick={() => handleStatusUpdate(job.id, 'completed')}
+                          className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Complete
+                        </button>
+                      )}
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="text-red-600 hover:text-red-900"
+                        className="inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900"
+                        title="Edit job"
                       >
                         <Edit className="h-5 w-5" />
                       </Link>
                       <button
                         onClick={() => handleDelete(job.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900"
+                        title="Delete job"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>

@@ -53,7 +53,8 @@ export async function POST(
         tax: quotation.tax,
         discount: quotation.discount,
         total: quotation.total,
-        balance: quotation.total
+        balance: quotation.total,
+        currency: ['USD', 'ZIG', 'ZAR'].includes(quotation.currency) ? quotation.currency : 'USD'
       },
       include: {
         customer: true,

@@ -39,17 +39,26 @@ export async function PUT(
 
   try {
     const { id } = await params;
-    const { name, email, phone, address, company, notes } = await request.json();
+    const body = await request.json();
+    const { name, email, phone, address, company, notes } = body;
+
+    // Ensure required fields
+    if (!name?.trim() || !phone?.trim()) {
+      return NextResponse.json(
+        { message: 'Name and phone are required' },
+        { status: 400 }
+      );
+    }
 
     const customer = await prisma.customer.update({
       where: { id },
       data: {
-        name,
-        email,
-        phone,
-        address,
-        company,
-        notes
+        name: name.trim(),
+        email: email?.trim() || null,
+        phone: phone.trim(),
+        address: address?.trim() || null,
+        company: company?.trim() || null,
+        notes: notes?.trim() || null
       }
     });
 

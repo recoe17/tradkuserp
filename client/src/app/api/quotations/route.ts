@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   if (!user) return unauthorizedResponse();
 
   try {
-    const { customerId, jobId, validUntil, items, notes, terms, tax, discount } = await request.json();
+    const { customerId, jobId, validUntil, items, notes, terms, tax, discount, currency } = await request.json();
 
     const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = tax || 0;
@@ -66,7 +66,9 @@ export async function POST(request: NextRequest) {
         subtotal,
         tax: taxAmount,
         discount: discountAmount,
-        total
+        total,
+        currency: ['USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'USD',
+        status: 'draft' // Always create as draft; only sent/accepted/rejected when explicitly updated
       },
       include: {
         customer: true,

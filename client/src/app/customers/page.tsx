@@ -127,9 +127,11 @@ export default function CustomersPage() {
                     <div className="flex items-center space-x-2">
                       <Link
                         href={`/customers/${customer.id}/edit`}
-                        className="text-red-600 hover:text-red-900"
+                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                        title="Edit customer"
                       >
-                        <Edit className="h-5 w-5" />
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
                       </Link>
                       <button
                         onClick={() => handleDelete(customer.id)}

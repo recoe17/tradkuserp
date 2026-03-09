@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { ArrowLeft, Download, Mail, MessageSquare, FileText, Send, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Download, Mail, MessageSquare, FileText, Send, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { COMPANY } from '@/lib/company';
+import { formatAmount } from '@/lib/currency';
 
 interface QuotationItem {
   description: string;
@@ -23,6 +24,7 @@ interface Quotation {
   tax: number;
   discount: number;
   total: number;
+  currency?: string;
   notes: string | null;
   terms: string | null;
   validUntil: string | null;
@@ -136,6 +138,16 @@ export default function QuotationViewPage() {
       fetchQuotation();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to update status');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this quotation? This cannot be undone.')) return;
+    try {
+      await api.delete(`/quotations/${params.id}`);
+      router.push('/quotations');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to delete quotation');
     }
   };
 
@@ -270,6 +282,13 @@ export default function QuotationViewPage() {
                 <FileText className="h-4 w-4 mr-1" />
                 Convert to Invoice
               </button>
+              <button
+                onClick={handleDelete}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </button>
             </div>
           </div>
         </div>
@@ -282,7 +301,7 @@ export default function QuotationViewPage() {
               <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Convert Quotation to Invoice</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  This will create a new invoice from quotation <strong>{quotation.quotationNumber}</strong> for <strong>${Number(quotation.total).toFixed(2)}</strong>.
+                  This will create a new invoice from quotation <strong>{quotation.quotationNumber}</strong> for <strong>{formatAmount(Number(quotation.total), quotation.currency || 'USD')}</strong>.
                 </p>
                 <form onSubmit={handleConvertToInvoice}>
                   <div className="mb-4">
@@ -407,10 +426,10 @@ export default function QuotationViewPage() {
                         <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">{item.quantity}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                          ${Number(item.unitPrice).toFixed(2)}
+                          {formatAmount(Number(item.unitPrice), quotation.currency || 'USD')}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                          ${(item.quantity * item.unitPrice).toFixed(2)}
+                          {formatAmount(item.quantity * item.unitPrice, quotation.currency || 'USD')}
                         </td>
                       </tr>
                     ))}
@@ -423,23 +442,23 @@ export default function QuotationViewPage() {
               <div className="w-64">
                 <div className="flex justify-between py-2">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="text-gray-900">${Number(quotation.subtotal).toFixed(2)}</span>
+                  <span className="text-gray-900">{formatAmount(Number(quotation.subtotal), quotation.currency || 'USD')}</span>
                 </div>
                 {Number(quotation.tax) > 0 && (
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">VAT (15.5%):</span>
-                    <span className="text-gray-900">${Number(quotation.tax).toFixed(2)}</span>
+                    <span className="text-gray-900">{formatAmount(Number(quotation.tax), quotation.currency || 'USD')}</span>
                   </div>
                 )}
                 {Number(quotation.discount) > 0 && (
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">Discount:</span>
-                    <span className="text-gray-900">-${Number(quotation.discount).toFixed(2)}</span>
+                    <span className="text-gray-900">-{formatAmount(Number(quotation.discount), quotation.currency || 'USD')}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-2 border-t-2 border-red-600 font-bold">
                   <span className="text-gray-900">Total:</span>
-                  <span className="text-red-600 text-lg">${Number(quotation.total).toFixed(2)}</span>
+                  <span className="text-red-600 text-lg">{formatAmount(Number(quotation.total), quotation.currency || 'USD')}</span>
                 </div>
               </div>
             </div>

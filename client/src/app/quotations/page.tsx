@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { Plus, Search, Eye, Mail, MessageSquare, Download } from 'lucide-react';
+import { Plus, Search, Eye, Mail, MessageSquare, Download, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { formatAmount } from '@/lib/currency';
 
 interface Quotation {
   id: string;
   quotationNumber: string;
   status: string;
   total: number;
+  currency?: string;
   customer: {
     name: string;
     email: string | null;
@@ -62,6 +64,16 @@ export default function QuotationsPage() {
 
   const handleDownloadPDF = (id: string, quotationNumber: string) => {
     window.open(`/api/quotations/${id}/pdf`, '_blank');
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this quotation? This cannot be undone.')) return;
+    try {
+      await api.delete(`/quotations/${id}`);
+      fetchQuotations();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to delete quotation');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -141,7 +153,7 @@ export default function QuotationsPage() {
                         </p>
                       )}
                       <p className="mt-1 text-sm font-semibold text-gray-900">
-                        Total: ${Number(quotation.total).toFixed(2)}
+                        Total: {formatAmount(Number(quotation.total), quotation.currency || 'USD')}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -177,6 +189,13 @@ export default function QuotationsPage() {
                           <MessageSquare className="h-5 w-5" />
                         </button>
                       )}
+                      <button
+                        onClick={() => handleDelete(quotation.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Delete quotation"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>

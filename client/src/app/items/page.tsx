@@ -79,9 +79,9 @@ export default function ItemsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Quotation Items</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Products & Services</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Add items to use in quotations. When added to a quote, only the price can be edited.
+              Add items (item name, default price, category) to use when creating quotations and invoices. Search by item name; use Description column for per-line notes.
             </p>
           </div>
           <button
@@ -98,7 +98,7 @@ export default function ItemsPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-4">New Item</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">Description *</label>
+                <label className="block text-sm font-medium text-gray-700">Item name *</label>
                 <input
                   type="text"
                   required
@@ -107,6 +107,7 @@ export default function ItemsPage() {
                   className="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-red-500 focus:border-red-500"
                   placeholder="e.g., Solar panel installation"
                 />
+                <p className="text-xs text-gray-500 mt-1">Shown in search when adding items to quotes/invoices</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Default Price ($) *</label>

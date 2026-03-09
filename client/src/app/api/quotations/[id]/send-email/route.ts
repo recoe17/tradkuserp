@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import nodemailer from 'nodemailer';
 import { generateQuotationPDF } from '@/lib/pdf';
+import { formatAmount } from '@/lib/currency';
 
 export async function POST(
   request: NextRequest,
@@ -63,7 +64,7 @@ export async function POST(
           <div style="padding: 20px;">
             <h2>Dear ${quotation.customer.name},</h2>
             <p>Thank you for your interest in our services. Please find attached quotation <strong>${quotation.quotationNumber}</strong>.</p>
-            <p><strong>Total Amount:</strong> $${Number(quotation.total).toFixed(2)}</p>
+            <p><strong>Total Amount:</strong> ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}</p>
             ${quotation.validUntil ? `<p><strong>Valid Until:</strong> ${new Date(quotation.validUntil).toLocaleDateString()}</p>` : ''}
             <p>If you have any questions, please don't hesitate to contact us.</p>
             <p>Best regards,<br><strong>MaxVolt Electrical (Pvt) Ltd</strong><br>Bulawayo, Zimbabwe</p>

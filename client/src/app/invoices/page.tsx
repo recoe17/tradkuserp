@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { Plus, Search, Eye, Download, DollarSign } from 'lucide-react';
+import { Plus, Search, Eye, Download, DollarSign, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { formatAmount } from '@/lib/currency';
 
 interface Invoice {
   id: string;
@@ -14,6 +15,7 @@ interface Invoice {
   total: number;
   balance: number;
   paidAmount: number;
+  currency?: string;
   customer: {
     name: string;
   };
@@ -46,6 +48,16 @@ export default function InvoicesPage() {
 
   const handleDownloadPDF = (id: string, invoiceNumber: string) => {
     window.open(`/api/invoices/${id}/pdf`, '_blank');
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this invoice? All associated payments will also be deleted. This cannot be undone.')) return;
+    try {
+      await api.delete(`/invoices/${id}`);
+      fetchInvoices();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Failed to delete invoice');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -135,16 +147,16 @@ export default function InvoicesPage() {
                       </p>
                       <div className="mt-2 flex items-center space-x-4">
                         <p className="text-sm font-semibold text-gray-900">
-                          Total: ${Number(invoice.total).toFixed(2)}
+                          Total: {formatAmount(Number(invoice.total), invoice.currency || 'USD')}
                         </p>
                         {Number(invoice.paidAmount) > 0 && (
                           <p className="text-sm text-green-600">
-                            Paid: ${Number(invoice.paidAmount).toFixed(2)}
+                            Paid: {formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD')}
                           </p>
                         )}
                         {Number(invoice.balance) > 0 && (
                           <p className="text-sm text-red-600">
-                            Balance: ${Number(invoice.balance).toFixed(2)}
+                            Balance: {formatAmount(Number(invoice.balance), invoice.currency || 'USD')}
                           </p>
                         )}
                       </div>
@@ -173,6 +185,13 @@ export default function InvoicesPage() {
                           <DollarSign className="h-5 w-5" />
                         </Link>
                       )}
+                      <button
+                        onClick={() => handleDelete(invoice.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Delete invoice"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 </div>

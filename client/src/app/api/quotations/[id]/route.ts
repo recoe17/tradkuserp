@@ -95,9 +95,10 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await prisma.quotation.delete({
-      where: { id }
-    });
+    await prisma.$transaction([
+      prisma.invoice.updateMany({ where: { quotationId: id }, data: { quotationId: null } }),
+      prisma.quotation.delete({ where: { id } })
+    ]);
 
     return NextResponse.json({ message: 'Quotation deleted successfully' });
   } catch (error: any) {

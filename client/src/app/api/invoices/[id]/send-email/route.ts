@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 import nodemailer from 'nodemailer';
 import { generateInvoicePDF } from '@/lib/pdf';
+import { formatAmount } from '@/lib/currency';
 
 export async function POST(
   request: NextRequest,
@@ -62,9 +63,9 @@ export async function POST(
           <div style="padding: 20px;">
             <h2>Dear ${invoice.customer.name},</h2>
             <p>Please find attached invoice <strong>${invoice.invoiceNumber}</strong>.</p>
-            <p><strong>Total Amount:</strong> $${Number(invoice.total).toFixed(2)}</p>
+            <p><strong>Total Amount:</strong> ${formatAmount(Number(invoice.total), invoice.currency || 'USD')}</p>
             <p><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString()}</p>
-            ${Number(invoice.balance) > 0 ? `<p><strong>Balance Due:</strong> $${Number(invoice.balance).toFixed(2)}</p>` : ''}
+            ${Number(invoice.balance) > 0 ? `<p><strong>Balance Due:</strong> ${formatAmount(Number(invoice.balance), invoice.currency || 'USD')}</p>` : ''}
             <p>Please make payment by the due date.</p>
             <p>Best regards,<br><strong>MaxVolt Electrical (Pvt) Ltd</strong><br>Bulawayo, Zimbabwe</p>
           </div>

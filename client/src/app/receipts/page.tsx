@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { FileCheck } from 'lucide-react';
+import { FileCheck, Download } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { formatAmount } from '@/lib/currency';
 
 interface Payment {
   id: string;
@@ -16,6 +17,7 @@ interface Payment {
   invoice: {
     id: string;
     invoiceNumber: string;
+    currency?: string;
     customer: {
       id: string;
       name: string;
@@ -69,7 +71,10 @@ export default function ReceiptsPage() {
     <Layout>
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Receipts</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Receipts</h1>
+            <p className="text-sm text-gray-500 mt-1">Receipts are created when you Record Payment on an invoice</p>
+          </div>
           <div className="mt-4 sm:mt-0">
             <input
               type="text"
@@ -90,41 +95,50 @@ export default function ReceiptsPage() {
             ) : (
               filteredReceipts.map((payment) => (
                 <li key={payment.id}>
-                  <Link
-                    href={`/invoices/${payment.invoice?.id}`}
-                    className="block hover:bg-gray-50 px-6 py-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 bg-red-50 rounded-md p-2">
-                          <FileCheck className="h-6 w-6 text-red-600" />
-                        </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">
-                            {payment.invoice?.customer?.name}
-                            {payment.invoice?.customer?.company && (
-                              <span className="text-gray-500 ml-1">
-                                ({payment.invoice.customer.company})
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Invoice #{payment.invoice?.invoiceNumber} •{' '}
-                            {format(new Date(payment.paidAt), 'MMM dd, yyyy')} •{' '}
-                            {payment.method.replace('_', ' ')}
-                          </p>
-                        </div>
+                  <div className="flex items-center justify-between hover:bg-gray-50 px-6 py-4">
+                    <Link
+                      href={`/invoices/${payment.invoice?.id}`}
+                      className="flex-1 flex items-center"
+                    >
+                      <div className="flex-shrink-0 bg-red-50 rounded-md p-2">
+                        <FileCheck className="h-6 w-6 text-red-600" />
+                      </div>
+                      <div className="ml-4 flex-1">
+                        <p className="text-sm font-medium text-gray-900">
+                          {payment.invoice?.customer?.name}
+                          {payment.invoice?.customer?.company && (
+                            <span className="text-gray-500 ml-1">
+                              ({payment.invoice.customer.company})
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Invoice #{payment.invoice?.invoiceNumber} •{' '}
+                          {format(new Date(payment.paidAt), 'MMM dd, yyyy')} •{' '}
+                          {payment.method.replace('_', ' ')}
+                        </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-red-600">
-                          ${Number(payment.amount).toFixed(2)}
+                          {formatAmount(Number(payment.amount), payment.invoice?.currency || 'USD')}
                         </p>
                         {payment.reference && (
                           <p className="text-xs text-gray-500">Ref: {payment.reference}</p>
                         )}
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.open(`/api/payments/${payment.id}/pdf`, '_blank');
+                      }}
+                      className="ml-4 inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                      title="Convert to Receipt"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Receipt
+                    </button>
+                  </div>
                 </li>
               ))
             )}

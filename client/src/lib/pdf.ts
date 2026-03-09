@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { COMPANY } from './company';
+import { formatAmount } from './currency';
 
 const RED_COLOR = '#DC2626';
 const DARK_GRAY = '#374151';
@@ -149,8 +150,8 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica');
         doc.text(item.description || '', 60, itemY, { width: 280 });
         doc.text(String(item.quantity || 0), 350, itemY);
-        doc.text(`$${Number(item.unitPrice || 0).toFixed(2)}`, 400, itemY);
-        doc.text(`$${Number(item.quantity * item.unitPrice || 0).toFixed(2)}`, 480, itemY);
+        doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'USD'), 400, itemY);
+        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'USD'), 480, itemY);
         itemY += 25;
       });
 
@@ -164,18 +165,18 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
         .text('Subtotal:', totalsX, doc.y);
       doc.fillColor(DARK_GRAY)
-        .text(`$${Number(quotation.subtotal).toFixed(2)}`, 480, doc.y);
+        .text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, doc.y);
       doc.moveDown(0.5);
       
       if (Number(quotation.tax) > 0) {
         doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, doc.y);
-        doc.fillColor(DARK_GRAY).text(`$${Number(quotation.tax).toFixed(2)}`, 480, doc.y);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, doc.y);
         doc.moveDown(0.5);
       }
       
       if (Number(quotation.discount) > 0) {
         doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, doc.y);
-        doc.fillColor('#16A34A').text(`-$${Number(quotation.discount).toFixed(2)}`, 480, doc.y);
+        doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, doc.y);
         doc.moveDown(0.5);
       }
       
@@ -185,7 +186,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.fillColor(RED_COLOR).fontSize(14).font('Helvetica-Bold')
         .text('TOTAL:', totalsX, doc.y);
       doc.fillColor(RED_COLOR)
-        .text(`$${Number(quotation.total).toFixed(2)}`, 470, doc.y);
+        .text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, doc.y);
 
       // Notes and Terms
       if (quotation.notes) {
@@ -362,8 +363,8 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica');
         doc.text(item.description || '', 60, itemY, { width: 280 });
         doc.text(String(item.quantity || 0), 350, itemY);
-        doc.text(`$${Number(item.unitPrice || 0).toFixed(2)}`, 400, itemY);
-        doc.text(`$${Number(item.quantity * item.unitPrice || 0).toFixed(2)}`, 480, itemY);
+        doc.text(formatAmount(Number(item.unitPrice || 0), invoice.currency || 'USD'), 400, itemY);
+        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), invoice.currency || 'USD'), 480, itemY);
         itemY += 25;
       });
 
@@ -376,18 +377,18 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
         .text('Subtotal:', totalsX, doc.y);
       doc.fillColor(DARK_GRAY)
-        .text(`$${Number(invoice.subtotal).toFixed(2)}`, 480, doc.y);
+        .text(formatAmount(Number(invoice.subtotal), invoice.currency || 'USD'), 480, doc.y);
       doc.moveDown(0.5);
       
       if (Number(invoice.tax) > 0) {
         doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, doc.y);
-        doc.fillColor(DARK_GRAY).text(`$${Number(invoice.tax).toFixed(2)}`, 480, doc.y);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(invoice.tax), invoice.currency || 'USD'), 480, doc.y);
         doc.moveDown(0.5);
       }
       
       if (Number(invoice.discount) > 0) {
         doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, doc.y);
-        doc.fillColor('#16A34A').text(`-$${Number(invoice.discount).toFixed(2)}`, 480, doc.y);
+        doc.fillColor('#16A34A').text(`-${formatAmount(Number(invoice.discount), invoice.currency || 'USD')}`, 480, doc.y);
         doc.moveDown(0.5);
       }
       
@@ -396,16 +397,16 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       
       doc.fillColor(DARK_GRAY).fontSize(11).font('Helvetica-Bold')
         .text('Total:', totalsX, doc.y);
-      doc.text(`$${Number(invoice.total).toFixed(2)}`, 480, doc.y);
+      doc.text(formatAmount(Number(invoice.total), invoice.currency || 'USD'), 480, doc.y);
       doc.moveDown(0.5);
 
       doc.fillColor('#16A34A').text('Paid:', totalsX, doc.y);
-      doc.text(`$${Number(invoice.paidAmount).toFixed(2)}`, 480, doc.y);
+      doc.text(formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD'), 480, doc.y);
       doc.moveDown(0.5);
 
       doc.fillColor(RED_COLOR).fontSize(12).font('Helvetica-Bold')
         .text('Balance Due:', totalsX, doc.y);
-      doc.text(`$${Number(invoice.balance).toFixed(2)}`, 470, doc.y);
+      doc.text(formatAmount(Number(invoice.balance), invoice.currency || 'USD'), 470, doc.y);
 
       // Payment History
       if (invoice.payments && invoice.payments.length > 0) {
@@ -414,7 +415,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         doc.moveDown(0.5);
         invoice.payments.forEach((payment: any) => {
           doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica')
-            .text(`${new Date(payment.paidAt).toLocaleDateString()} - $${Number(payment.amount).toFixed(2)} (${payment.method})`, 50);
+            .text(`${new Date(payment.paidAt).toLocaleDateString()} - ${formatAmount(Number(payment.amount), invoice.currency || 'USD')} (${payment.method})`, 50);
           doc.moveDown(0.3);
         });
       }
@@ -436,6 +437,104 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.rect(0, doc.page.height - 40, doc.page.width, 40).fill(RED_COLOR);
       doc.fillColor('#FFFFFF').fontSize(10).font('Helvetica')
         .text('Thank you for your business!', 50, doc.page.height - 28, { align: 'center' });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+export async function generateReceiptPDF(payment: any): Promise<Buffer> {
+  const logoBuffer = await fetchLogoBuffer();
+
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 50 });
+      const buffers: Buffer[] = [];
+
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfBuffer = Buffer.concat(buffers);
+        resolve(pdfBuffer);
+      });
+      doc.on('error', reject);
+
+      doc.rect(0, 0, doc.page.width, 8).fill(RED_COLOR);
+
+      if (logoBuffer) {
+        doc.image(logoBuffer, 50, 20, { width: 150 });
+        doc.moveDown(4);
+      } else {
+        doc.moveDown();
+        doc.fillColor(RED_COLOR).fontSize(24).font('Helvetica-Bold')
+          .text('MAXVOLT', 50, 25, { continued: true })
+          .fillColor(DARK_GRAY).text(' ELECTRICAL');
+        doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
+          .text('The best way to power up', 50, 52);
+        doc.moveDown(2);
+      }
+
+      doc.y = 90;
+      doc.fillColor(RED_COLOR).fontSize(28).font('Helvetica-Bold')
+        .text('RECEIPT', { align: 'right' });
+      doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
+        .text(`#${payment.id.slice(-8).toUpperCase()}`, { align: 'right' });
+      doc.moveDown(2);
+
+      doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).strokeColor(RED_COLOR).lineWidth(2).stroke();
+      doc.moveDown();
+
+      const invoice = payment.invoice;
+      const customer = invoice?.customer || { name: '', company: '', address: '', email: '', phone: '' };
+      const currency = invoice?.currency || 'USD';
+
+      const leftColumnX = 50;
+      const rightColumnX = 320;
+      const infoStartY = doc.y;
+
+      doc.fillColor(RED_COLOR).fontSize(10).font('Helvetica-Bold')
+        .text('FROM:', leftColumnX, infoStartY);
+      doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica-Bold')
+        .text(COMPANY.name, leftColumnX, doc.y + 5);
+      doc.fillColor(LIGHT_GRAY).font('Helvetica')
+        .text(COMPANY.address, leftColumnX)
+        .text(`TIN: ${COMPANY.tin}`, leftColumnX)
+        .text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX)
+        .text(COMPANY.email, leftColumnX)
+        .text(COMPANY.website, leftColumnX);
+
+      doc.fillColor(RED_COLOR).fontSize(10).font('Helvetica-Bold')
+        .text('RECEIVED FROM:', rightColumnX, infoStartY);
+      doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica-Bold')
+        .text(customer.name, rightColumnX, doc.y + 5);
+      doc.fillColor(LIGHT_GRAY).font('Helvetica');
+      if (customer.company) doc.text(customer.company, rightColumnX);
+      if (customer.address) doc.text(customer.address, rightColumnX);
+      if (customer.email) doc.text(customer.email, rightColumnX);
+      if (customer.phone) doc.text(customer.phone, rightColumnX);
+
+      doc.moveDown(3);
+
+      doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Payment details');
+      doc.moveDown(0.5);
+      doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica')
+        .text(`Date: ${new Date(payment.paidAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`)
+        .text(`Invoice: #${invoice?.invoiceNumber || '-'}`)
+        .text(`Amount: ${formatAmount(Number(payment.amount), currency)}`)
+        .text(`Method: ${(payment.method || '').replace(/_/g, ' ')}`);
+      if (payment.reference) {
+        doc.text(`Reference: ${payment.reference}`);
+      }
+
+      doc.moveDown(2);
+      doc.fillColor(RED_COLOR).fontSize(14).font('Helvetica-Bold')
+        .text(`Amount Received: ${formatAmount(Number(payment.amount), currency)}`);
+
+      doc.moveDown(3);
+      doc.rect(0, doc.page.height - 40, doc.page.width, 40).fill(RED_COLOR);
+      doc.fillColor('#FFFFFF').fontSize(10).font('Helvetica')
+        .text('Thank you for your payment!', 50, doc.page.height - 28, { align: 'center' });
 
       doc.end();
     } catch (error) {
