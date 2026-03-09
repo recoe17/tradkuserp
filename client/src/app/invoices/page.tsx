@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { Plus, Search, Eye, Download, DollarSign, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Download, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { formatAmount } from '@/lib/currency';
@@ -176,15 +176,6 @@ export default function InvoicesPage() {
                       >
                         <Download className="h-5 w-5" />
                       </button>
-                      {Number(invoice.balance) > 0 && (
-                        <Link
-                          href={`/invoices/${invoice.id}/payment`}
-                          className="text-green-600 hover:text-green-900"
-                          title="Add Payment"
-                        >
-                          <DollarSign className="h-5 w-5" />
-                        </Link>
-                      )}
                       <button
                         onClick={() => handleDelete(invoice.id)}
                         className="text-red-600 hover:text-red-900"
