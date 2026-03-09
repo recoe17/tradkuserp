@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { Plus, Search, Eye, Mail, MessageSquare, Download, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Mail, MessageSquare, Download, Trash2, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { formatAmount } from '@/lib/currency';
@@ -157,6 +157,14 @@ export default function QuotationsPage() {
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <Link
+                        href={`/quotations/${quotation.id}/edit`}
+                        className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+                        title="Edit quotation"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Link>
                       <Link
                         href={`/quotations/${quotation.id}`}
                         className="text-red-600 hover:text-red-900"

@@ -54,26 +54,31 @@ export async function PUT(
     }
 
     // Full update
-    const { validUntil, items, notes, terms, tax, discount, status } = body;
+    const { customerId, jobId, validUntil, items, notes, terms, tax, discount, status, currency } = body;
 
     const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = tax || 0;
     const discountAmount = discount || 0;
     const total = subtotal + taxAmount - discountAmount;
 
+    const updateData: Record<string, any> = {
+      validUntil: validUntil ? new Date(validUntil) : undefined,
+      items,
+      notes,
+      terms,
+      subtotal,
+      tax: taxAmount,
+      discount: discountAmount,
+      total,
+      status: status || undefined
+    };
+    if (customerId) updateData.customerId = customerId;
+    if (jobId !== undefined) updateData.jobId = jobId || null;
+    if (currency && ['USD', 'ZIG', 'ZAR'].includes(currency)) updateData.currency = currency;
+
     const quotation = await prisma.quotation.update({
       where: { id },
-      data: {
-        validUntil: validUntil ? new Date(validUntil) : undefined,
-        items,
-        notes,
-        terms,
-        subtotal,
-        tax: taxAmount,
-        discount: discountAmount,
-        total,
-        status: status || undefined
-      },
+      data: updateData,
       include: {
         customer: true,
         job: true

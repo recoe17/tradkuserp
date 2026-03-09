@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
-import { ArrowLeft, Download, Mail, MessageSquare, FileText, Send, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Mail, MessageSquare, FileText, Send, CheckCircle, XCircle, Trash2, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { COMPANY } from '@/lib/company';
@@ -203,6 +203,13 @@ export default function QuotationViewPage() {
             </span>
           </div>
           <div className="flex space-x-2">
+            <Link
+              href={`/quotations/${params.id}/edit`}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Link>
             <button
               onClick={handleDownloadPDF}
               className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
