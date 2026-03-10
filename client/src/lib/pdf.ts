@@ -6,6 +6,12 @@ const RED_COLOR = '#DC2626';
 const DARK_GRAY = '#374151';
 const LIGHT_GRAY = '#6B7280';
 
+function truncateText(text: string, maxLen: number): string {
+  if (!text || typeof text !== 'string') return '';
+  const cleaned = text.replace(/\r\n/g, '\n').trim();
+  return cleaned.length > maxLen ? cleaned.slice(0, maxLen) + '...' : cleaned;
+}
+
 async function fetchLogoBuffer(): Promise<Buffer | null> {
   try {
     const logoUrl = 'https://maxvolterp.vercel.app/logo.png';
@@ -30,7 +36,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
   
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ margin: 50, size: 'A4', autoFirstPage: true });
       const buffers: Buffer[] = [];
 
       doc.on('data', buffers.push.bind(buffers));
@@ -148,7 +154,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         }
         
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica');
-        doc.text(item.description || '', 60, itemY, { width: 280 });
+        doc.text(truncateText(String(item.description || ''), 120), 60, itemY, { width: 280, height: 20, ellipsis: true });
         doc.text(String(item.quantity || 0), 350, itemY);
         doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'USD'), 400, itemY);
         doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'USD'), 480, itemY);
@@ -192,13 +198,13 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       if (quotation.notes) {
         doc.moveDown(2);
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Notes:');
-        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(quotation.notes);
+        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(truncateText(quotation.notes, 1500), { width: 500, height: 80 });
       }
 
       if (quotation.terms) {
         doc.moveDown();
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Terms & Conditions:');
-        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(quotation.terms);
+        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(truncateText(quotation.terms, 2000), { width: 500, height: 100 });
       }
 
       // Bank Details
@@ -233,7 +239,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
   
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ margin: 50, size: 'A4', autoFirstPage: true });
       const buffers: Buffer[] = [];
 
       doc.on('data', buffers.push.bind(buffers));
@@ -361,7 +367,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         }
         
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica');
-        doc.text(item.description || '', 60, itemY, { width: 280 });
+        doc.text(truncateText(String(item.description || ''), 120), 60, itemY, { width: 280, height: 20, ellipsis: true });
         doc.text(String(item.quantity || 0), 350, itemY);
         doc.text(formatAmount(Number(item.unitPrice || 0), invoice.currency || 'USD'), 400, itemY);
         doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), invoice.currency || 'USD'), 480, itemY);
@@ -424,13 +430,13 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       if (invoice.notes) {
         doc.moveDown();
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Notes:');
-        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(invoice.notes);
+        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(truncateText(invoice.notes, 1500), { width: 500, height: 80 });
       }
 
       if (invoice.terms) {
         doc.moveDown();
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Terms & Conditions:');
-        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(invoice.terms);
+        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica').text(truncateText(invoice.terms, 2000), { width: 500, height: 100 });
       }
 
       // Footer
@@ -450,7 +456,7 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
 
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ margin: 50, size: 'A4', autoFirstPage: true });
       const buffers: Buffer[] = [];
 
       doc.on('data', buffers.push.bind(buffers));
