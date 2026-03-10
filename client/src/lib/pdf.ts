@@ -120,7 +120,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       }
 
       // Items Table Header
-      const tableTop = 340;
+      const tableTop = 300;
       doc.rect(50, tableTop, doc.page.width - 100, 25).fillColor(RED_COLOR).fill();
       
       doc.fillColor('#FFFFFF').fontSize(10).font('Helvetica-Bold');
@@ -129,11 +129,14 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.text('Unit Price', 400, tableTop + 8);
       doc.text('Total', 480, tableTop + 8);
 
-      // Items
+      // Items (cap count so everything fits on one page)
       let itemY = tableTop + 30;
       const items = Array.isArray(quotation.items) ? quotation.items : [];
+      const maxItemsToShow = 6;
+      const itemsToShow = items.slice(0, maxItemsToShow);
+      const remainingItems = items.length - itemsToShow.length;
       
-      items.forEach((item: any, index: number) => {
+      itemsToShow.forEach((item: any, index: number) => {
         // Alternate row background
         if (index % 2 === 0) {
           doc.rect(50, itemY - 5, doc.page.width - 100, 25).fillColor('#F9FAFB').fill();
@@ -147,66 +150,74 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         itemY += 25;
       });
 
-      // Totals section
-      doc.y = itemY + 20;
+      if (remainingItems > 0) {
+        // Summary row for extra items
+        doc.rect(50, itemY - 5, doc.page.width - 100, 25).fillColor('#F3F4F6').fill();
+        doc.fillColor(DARK_GRAY).fontSize(9).font('Helvetica-Oblique');
+        doc.text(`+ ${remainingItems} more item(s) not shown`, 60, itemY, { width: 380, ...NO_BREAK });
+        itemY += 25;
+      }
+
+      // Totals section - fixed top so it never pushes into a new page
+      const totalsTopY = 500;
       const totalsX = 380;
+      doc.y = totalsTopY;
       
       // Totals box
-      doc.rect(totalsX - 10, doc.y - 5, 180, 80).fillColor('#FEF2F2').fill();
+      doc.rect(totalsX - 10, totalsTopY - 5, 180, 80).fillColor('#FEF2F2').fill();
       
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
-        .text('Subtotal:', totalsX, doc.y);
+        .text('Subtotal:', totalsX, totalsTopY);
       doc.fillColor(DARK_GRAY)
-        .text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, doc.y);
-      doc.moveDown(0.5);
+        .text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, totalsTopY);
       
+      let totalsLineY = totalsTopY + 14;
       if (Number(quotation.tax) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, doc.y);
-        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, doc.y);
-        doc.moveDown(0.5);
+        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, totalsLineY);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, totalsLineY);
+        totalsLineY += 14;
       }
       
       if (Number(quotation.discount) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, doc.y);
-        doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, doc.y);
-        doc.moveDown(0.5);
+        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, totalsLineY);
+        doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, totalsLineY);
+        totalsLineY += 14;
       }
       
-      doc.moveTo(totalsX, doc.y + 5).lineTo(550, doc.y + 5).strokeColor(RED_COLOR).lineWidth(1).stroke();
-      doc.moveDown();
+      doc.moveTo(totalsX, totalsTopY + 50).lineTo(550, totalsTopY + 50).strokeColor(RED_COLOR).lineWidth(1).stroke();
       
       doc.fillColor(RED_COLOR).fontSize(14).font('Helvetica-Bold')
-        .text('TOTAL:', totalsX, doc.y);
+        .text('TOTAL:', totalsX, totalsTopY + 60);
       doc.fillColor(RED_COLOR)
-        .text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, doc.y);
+        .text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, totalsTopY + 60);
 
-      // Notes and Terms - fixed Y to avoid flow
-      const notesStartY = itemY + 110;
+      // Notes and Terms - fixed Y so they never create new pages
+      const notesStartY = 580;
       if (quotation.notes) {
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Notes:', 50, notesStartY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica')
-          .text(truncateText(quotation.notes, 800), 50, notesStartY + 14, { width: 500, height: 70 });
+          .text(truncateText(quotation.notes, 600), 50, notesStartY + 14, { width: 500, height: 50 });
       }
-      const termsY = quotation.notes ? notesStartY + 90 : notesStartY;
+      const termsY = quotation.notes ? notesStartY + 70 : notesStartY;
       if (quotation.terms) {
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Terms & Conditions:', 50, termsY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica')
-          .text(truncateText(quotation.terms, 1000), 50, termsY + 14, { width: 500, height: 80 });
+          .text(truncateText(quotation.terms, 700), 50, termsY + 14, { width: 500, height: 60 });
       }
 
-      // Bank Details - fixed Y
-      const bankYStart = quotation.terms ? termsY + 100 : termsY + 10;
-      const bankBoxHeight = COMPANY.banks.length * 55 + 15;
+      // Bank Details - fixed Y and limited height
+      const bankYStart = 720;
+      const banksToShow = COMPANY.banks.slice(0, 1);
+      const bankBoxHeight = banksToShow.length * 40 + 15;
       doc.rect(50, bankYStart, doc.page.width - 100, bankBoxHeight).strokeColor('#E5E7EB').lineWidth(1).stroke();
       let bankY = bankYStart + 10;
-      COMPANY.banks.forEach((bank) => {
-        doc.fillColor(RED_COLOR).fontSize(10).font('Helvetica-Bold').text(`Bank Details (${bank.title})`, 60, bankY);
-        doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica')
-          .text(`Bank: ${bank.name}`, 60, bankY + 14)
-          .text(`Account Name: ${bank.accountName}`, 60, bankY + 26)
-          .text(`Account Number: ${bank.accountNumber}`, 60, bankY + 38)
-          .text(`Branch: ${bank.branch}`, 60, bankY + 50);
-        bankY += 65;
+      banksToShow.forEach((bank) => {
+        doc.fillColor(RED_COLOR).fontSize(10).font('Helvetica-Bold')
+          .text(`Bank Details (${bank.title})`, 60, bankY, NO_BREAK);
+        doc.fillColor(DARK_GRAY).fontSize(9).font('Helvetica')
+          .text(`Bank: ${bank.name}`, 60, bankY + 12, { width: 250, ...NO_BREAK })
+          .text(`Acc: ${bank.accountNumber}`, 60, bankY + 24, { width: 250, ...NO_BREAK });
+        bankY += 40;
       });
 
       // Footer - fixed position, no flow
@@ -320,7 +331,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         .text(new Date(invoice.dueDate).toLocaleDateString(), rightColumnX + 70, dateBoxY + 25);
 
       // Items Table Header
-      const invTableTop = 340;
+      const invTableTop = 300;
       doc.rect(50, invTableTop, doc.page.width - 100, 25).fillColor(RED_COLOR).fill();
       
       doc.fillColor('#FFFFFF').fontSize(10).font('Helvetica-Bold');
@@ -328,12 +339,15 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.text('Qty', 350, invTableTop + 8);
       doc.text('Unit Price', 400, invTableTop + 8);
       doc.text('Total', 480, invTableTop + 8);
-
-      // Items
+      
+      // Items (cap count so everything fits on one page)
       let invItemY = invTableTop + 30;
       const items = Array.isArray(invoice.items) ? invoice.items : [];
+      const invMaxItemsToShow = 6;
+      const invItemsToShow = items.slice(0, invMaxItemsToShow);
+      const invRemainingItems = items.length - invItemsToShow.length;
       
-      items.forEach((item: any, index: number) => {
+      invItemsToShow.forEach((item: any, index: number) => {
         if (index % 2 === 0) {
           doc.rect(50, invItemY - 5, doc.page.width - 100, 25).fillColor('#F9FAFB').fill();
         }
@@ -346,48 +360,52 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         invItemY += 25;
       });
 
-      // Totals section
-      doc.y = invItemY + 20;
+      if (invRemainingItems > 0) {
+        doc.rect(50, invItemY - 5, doc.page.width - 100, 25).fillColor('#F3F4F6').fill();
+        doc.fillColor(DARK_GRAY).fontSize(9).font('Helvetica-Oblique');
+        doc.text(`+ ${invRemainingItems} more item(s) not shown`, 60, invItemY, { width: 380, ...NO_BREAK });
+        invItemY += 25;
+      }
+
+      // Totals section - fixed top
+      const invTotalsTopY = 500;
       const totalsX = 380;
       
-      doc.rect(totalsX - 10, doc.y - 5, 180, 110).fillColor('#FEF2F2').fill();
+      doc.rect(totalsX - 10, invTotalsTopY - 5, 180, 110).fillColor('#FEF2F2').fill();
       
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
-        .text('Subtotal:', totalsX, doc.y);
+        .text('Subtotal:', totalsX, invTotalsTopY);
       doc.fillColor(DARK_GRAY)
-        .text(formatAmount(Number(invoice.subtotal), invoice.currency || 'USD'), 480, doc.y);
-      doc.moveDown(0.5);
+        .text(formatAmount(Number(invoice.subtotal), invoice.currency || 'USD'), 480, invTotalsTopY);
       
+      let invTotalsLineY = invTotalsTopY + 14;
       if (Number(invoice.tax) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, doc.y);
-        doc.fillColor(DARK_GRAY).text(formatAmount(Number(invoice.tax), invoice.currency || 'USD'), 480, doc.y);
-        doc.moveDown(0.5);
+        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, invTotalsLineY);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(invoice.tax), invoice.currency || 'USD'), 480, invTotalsLineY);
+        invTotalsLineY += 14;
       }
       
       if (Number(invoice.discount) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, doc.y);
-        doc.fillColor('#16A34A').text(`-${formatAmount(Number(invoice.discount), invoice.currency || 'USD')}`, 480, doc.y);
-        doc.moveDown(0.5);
+        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, invTotalsLineY);
+        doc.fillColor('#16A34A').text(`-${formatAmount(Number(invoice.discount), invoice.currency || 'USD')}`, 480, invTotalsLineY);
+        invTotalsLineY += 14;
       }
       
-      doc.moveTo(totalsX, doc.y + 5).lineTo(550, doc.y + 5).strokeColor(RED_COLOR).lineWidth(1).stroke();
-      doc.moveDown();
+      doc.moveTo(totalsX, invTotalsTopY + 60).lineTo(550, invTotalsTopY + 60).strokeColor(RED_COLOR).lineWidth(1).stroke();
       
       doc.fillColor(DARK_GRAY).fontSize(11).font('Helvetica-Bold')
-        .text('Total:', totalsX, doc.y);
-      doc.text(formatAmount(Number(invoice.total), invoice.currency || 'USD'), 480, doc.y);
-      doc.moveDown(0.5);
+        .text('Total:', totalsX, invTotalsTopY + 70);
+      doc.text(formatAmount(Number(invoice.total), invoice.currency || 'USD'), 480, invTotalsTopY + 70);
 
-      doc.fillColor('#16A34A').text('Paid:', totalsX, doc.y);
-      doc.text(formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD'), 480, doc.y);
-      doc.moveDown(0.5);
+      doc.fillColor('#16A34A').text('Paid:', totalsX, invTotalsTopY + 84);
+      doc.text(formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD'), 480, invTotalsTopY + 84);
 
       doc.fillColor(RED_COLOR).fontSize(12).font('Helvetica-Bold')
-        .text('Balance Due:', totalsX, doc.y);
-      doc.text(formatAmount(Number(invoice.balance), invoice.currency || 'USD'), 470, doc.y);
+        .text('Balance Due:', totalsX, invTotalsTopY + 98);
+      doc.text(formatAmount(Number(invoice.balance), invoice.currency || 'USD'), 470, invTotalsTopY + 98);
 
       // Payment History - fixed Y, no flow (max 5 payments shown)
-      const payHistY = invItemY + 145;
+      const payHistY = 580;
       if (invoice.payments && invoice.payments.length > 0) {
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Payment History:', 50, payHistY, NO_BREAK);
         invoice.payments.slice(0, 5).forEach((payment: any, i: number) => {
@@ -397,7 +415,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       }
 
       // Notes and Terms - fixed Y
-      const invNotesY = payHistY + (invoice.payments?.length ? Math.min(invoice.payments.length, 5) * 18 + 25 : 10);
+      const invNotesY = 640;
       if (invoice.notes) {
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('Notes:', 50, invNotesY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica')
