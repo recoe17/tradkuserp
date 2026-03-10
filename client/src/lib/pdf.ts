@@ -86,7 +86,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica-Bold')
         .text(truncateText(COMPANY.name, 60), leftColumnX, infoStartY + 14, { width: 250, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
-        .text(truncateText(COMPANY.address, 80), leftColumnX, infoStartY + 28, { width: 250, height: 28, ellipsis: true });
+        .text(truncateText(COMPANY.address, 45), leftColumnX, infoStartY + 28, { width: 250, ...NO_BREAK });
       doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, infoStartY + 48, NO_BREAK);
       doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, infoStartY + 60, NO_BREAK);
       doc.text(COMPANY.email, leftColumnX, infoStartY + 72, { width: 250, ...NO_BREAK });
@@ -100,7 +100,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica');
       const cust = quotation.customer || {};
       doc.text(truncateText(cust.company || '', 60), rightColumnX, infoStartY + 28, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(cust.address || '', 80), rightColumnX, infoStartY + 42, { width: 250, height: 28, ellipsis: true });
+      doc.text(truncateText(cust.address || '', 45), rightColumnX, infoStartY + 42, { width: 250, ...NO_BREAK });
       doc.text(truncateText(cust.email || '', 60), rightColumnX, infoStartY + 62, { width: 250, ...NO_BREAK });
       doc.text(truncateText(cust.phone || '', 40), rightColumnX, infoStartY + 74, { width: 250, ...NO_BREAK });
 
@@ -288,7 +288,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica-Bold')
         .text(truncateText(COMPANY.name, 60), leftColumnX, invInfoY + 14, { width: 250, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
-        .text(truncateText(COMPANY.address, 80), leftColumnX, invInfoY + 28, { width: 250, height: 28, ellipsis: true });
+        .text(truncateText(COMPANY.address, 45), leftColumnX, invInfoY + 28, { width: 250, ...NO_BREAK });
       doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, invInfoY + 48, NO_BREAK);
       doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, invInfoY + 60, NO_BREAK);
       doc.text(COMPANY.email, leftColumnX, invInfoY + 72, { width: 250, ...NO_BREAK });
@@ -302,7 +302,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         .text(truncateText(invCust.name || '', 60), rightColumnX, invInfoY + 14, { width: 250, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica');
       doc.text(truncateText(invCust.company || '', 60), rightColumnX, invInfoY + 28, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(invCust.address || '', 80), rightColumnX, invInfoY + 42, { width: 250, height: 28, ellipsis: true });
+      doc.text(truncateText(invCust.address || '', 45), rightColumnX, invInfoY + 42, { width: 250, ...NO_BREAK });
       doc.text(truncateText(invCust.email || '', 60), rightColumnX, invInfoY + 62, { width: 250, ...NO_BREAK });
       doc.text(truncateText(invCust.phone || '', 40), rightColumnX, invInfoY + 74, { width: 250, ...NO_BREAK });
 
@@ -473,7 +473,7 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       doc.fillColor(DARK_GRAY).fontSize(10).font('Helvetica-Bold')
         .text(truncateText(COMPANY.name, 60), leftColumnX, recInfoY + 14, { width: 250, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica')
-        .text(truncateText(COMPANY.address, 80), leftColumnX, recInfoY + 28, { width: 250, ...NO_BREAK })
+        .text(truncateText(COMPANY.address, 45), leftColumnX, recInfoY + 28, { width: 250, ...NO_BREAK })
         .text(`TIN: ${COMPANY.tin}`, leftColumnX, recInfoY + 42, NO_BREAK)
         .text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, recInfoY + 54, NO_BREAK)
         .text(COMPANY.email, leftColumnX, recInfoY + 66, { width: 250, ...NO_BREAK })
@@ -485,7 +485,7 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
         .text(truncateText(customer.name, 60), rightColumnX, recInfoY + 14, { width: 250, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(10).font('Helvetica');
       doc.text(truncateText(customer.company || '', 60), rightColumnX, recInfoY + 28, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(customer.address || '', 80), rightColumnX, recInfoY + 42, { width: 250, ...NO_BREAK });
+      doc.text(truncateText(customer.address || '', 45), rightColumnX, recInfoY + 42, { width: 250, ...NO_BREAK });
       doc.text(truncateText(customer.email || '', 60), rightColumnX, recInfoY + 56, { width: 250, ...NO_BREAK });
       doc.text(truncateText(customer.phone || '', 40), rightColumnX, recInfoY + 70, { width: 250, ...NO_BREAK });
 
