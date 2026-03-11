@@ -123,6 +123,13 @@ export default function CustomersPage() {
                       {customer.address && (
                         <p className="mt-1 text-sm text-gray-500">{customer.address}</p>
                       )}
+                      {(customer.tin || customer.vat) && (
+                        <p className="mt-1 text-sm text-gray-500">
+                          {customer.tin && <span>TIN: {customer.tin}</span>}
+                          {customer.tin && customer.vat && ' · '}
+                          {customer.vat && <span>VAT: {customer.vat}</span>}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Link

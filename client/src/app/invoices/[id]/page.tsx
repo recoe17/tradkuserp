@@ -344,6 +344,12 @@ export default function InvoiceViewPage() {
                 {invoice.customer.phone && (
                   <p className="text-gray-600">{invoice.customer.phone}</p>
                 )}
+                {invoice.customer.tin && (
+                  <p className="text-gray-600">TIN: {invoice.customer.tin}</p>
+                )}
+                {invoice.customer.vat && (
+                  <p className="text-gray-600">VAT: {invoice.customer.vat}</p>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-gray-600">

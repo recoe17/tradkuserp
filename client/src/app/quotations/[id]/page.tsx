@@ -385,6 +385,12 @@ export default function QuotationViewPage() {
                 {quotation.customer.phone && (
                   <p className="text-gray-600">{quotation.customer.phone}</p>
                 )}
+                {quotation.customer.tin && (
+                  <p className="text-gray-600">TIN: {quotation.customer.tin}</p>
+                )}
+                {quotation.customer.vat && (
+                  <p className="text-gray-600">VAT: {quotation.customer.vat}</p>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-gray-600">

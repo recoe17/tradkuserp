@@ -102,6 +102,8 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.text(truncateText(cust.address || '', 45), rightColumnX, infoStartY + 36, { width: 250, ...NO_BREAK });
       doc.text(truncateText(cust.email || '', 60), rightColumnX, infoStartY + 48, { width: 250, ...NO_BREAK });
       doc.text(truncateText(cust.phone || '', 40), rightColumnX, infoStartY + 58, { width: 250, ...NO_BREAK });
+      if (cust.tin) doc.text(`TIN: ${cust.tin}`, rightColumnX, infoStartY + 70, { width: 250, ...NO_BREAK });
+      if (cust.vat) doc.text(`VAT: ${cust.vat}`, rightColumnX, infoStartY + 82, { width: 250, ...NO_BREAK });
 
       // Date info box
       const dateBoxY = 265;
@@ -314,6 +316,8 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.text(truncateText(invCust.address || '', 45), rightColumnX, invInfoY + 42, { width: 250, ...NO_BREAK });
       doc.text(truncateText(invCust.email || '', 60), rightColumnX, invInfoY + 62, { width: 250, ...NO_BREAK });
       doc.text(truncateText(invCust.phone || '', 40), rightColumnX, invInfoY + 74, { width: 250, ...NO_BREAK });
+      if (invCust.tin) doc.text(`TIN: ${invCust.tin}`, rightColumnX, invInfoY + 86, { width: 250, ...NO_BREAK });
+      if (invCust.vat) doc.text(`VAT: ${invCust.vat}`, rightColumnX, invInfoY + 98, { width: 250, ...NO_BREAK });
 
       // Date info box
       const dateBoxY = 265;
@@ -504,8 +508,10 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       doc.text(truncateText(customer.address || '', 45), rightColumnX, recInfoY + 42, { width: 250, ...NO_BREAK });
       doc.text(truncateText(customer.email || '', 60), rightColumnX, recInfoY + 56, { width: 250, ...NO_BREAK });
       doc.text(truncateText(customer.phone || '', 40), rightColumnX, recInfoY + 70, { width: 250, ...NO_BREAK });
+      if (customer.tin) doc.text(`TIN: ${customer.tin}`, rightColumnX, recInfoY + 84, { width: 250, ...NO_BREAK });
+      if (customer.vat) doc.text(`VAT: ${customer.vat}`, rightColumnX, recInfoY + 96, { width: 250, ...NO_BREAK });
 
-      const recDetailY = 275;
+      const recDetailY = 290;
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Payment details', 50, recDetailY, NO_BREAK);
       doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
         .text(`Date: ${new Date(payment.paidAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`, 50, recDetailY + 18, NO_BREAK)
