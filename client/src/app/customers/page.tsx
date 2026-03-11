@@ -95,7 +95,9 @@ export default function CustomersPage() {
 
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
-            {filteredCustomers.map((customer) => (
+            {filteredCustomers.map((customer) => {
+              const c = customer as typeof customer & { tin?: string | null; vat?: string | null };
+              return (
               <li key={customer.id}>
                 <div className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                   <div className="flex items-center justify-between">
@@ -123,11 +125,11 @@ export default function CustomersPage() {
                       {customer.address && (
                         <p className="mt-1 text-sm text-gray-500">{customer.address}</p>
                       )}
-                      {(customer.tin || customer.vat) && (
+                      {(c.tin || c.vat) && (
                         <p className="mt-1 text-sm text-gray-500">
-                          {customer.tin && <span>TIN: {customer.tin}</span>}
-                          {customer.tin && customer.vat && ' · '}
-                          {customer.vat && <span>VAT: {customer.vat}</span>}
+                          {c.tin && <span>TIN: {c.tin}</span>}
+                          {c.tin && c.vat && ' · '}
+                          {c.vat && <span>VAT: {c.vat}</span>}
                         </p>
                       )}
                     </div>
@@ -150,7 +152,8 @@ export default function CustomersPage() {
                   </div>
                 </div>
               </li>
-            ))}
+            );
+            })}
           </ul>
           {filteredCustomers.length === 0 && (
             <div className="text-center py-12">
