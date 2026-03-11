@@ -17,6 +17,8 @@ export default function EditCustomerPage() {
     phone: '',
     address: '',
     company: '',
+    tin: '',
+    vat: '',
     notes: '',
   });
 
@@ -34,6 +36,8 @@ export default function EditCustomerPage() {
         phone: c.phone || '',
         address: c.address || '',
         company: c.company || '',
+        tin: c.tin || '',
+        vat: c.vat || '',
         notes: c.notes || '',
       });
     } catch (error: any) {
@@ -135,9 +139,35 @@ export default function EditCustomerPage() {
               </label>
               <textarea
                 id="address"
-                rows={3}
+                rows={2}
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="tin" className="block text-sm font-medium text-gray-700">
+                TIN (Tax ID)
+              </label>
+              <input
+                type="text"
+                id="tin"
+                value={formData.tin}
+                onChange={(e) => setFormData({ ...formData, tin: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="vat" className="block text-sm font-medium text-gray-700">
+                VAT Number
+              </label>
+              <input
+                type="text"
+                id="vat"
+                value={formData.vat}
+                onChange={(e) => setFormData({ ...formData, vat: e.target.value })}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               />
             </div>

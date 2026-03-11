@@ -40,7 +40,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, email, phone, address, company, notes } = body;
+    const { name, email, phone, address, company, tin, vat, notes } = body;
 
     // Ensure required fields
     if (!name?.trim() || !phone?.trim()) {
@@ -58,6 +58,8 @@ export async function PUT(
         phone: phone.trim(),
         address: address?.trim() || null,
         company: company?.trim() || null,
+        tin: tin?.trim() || null,
+        vat: vat?.trim() || null,
         notes: notes?.trim() || null
       }
     });

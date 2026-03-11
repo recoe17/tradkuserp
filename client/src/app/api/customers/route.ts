@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   if (!user) return unauthorizedResponse();
 
   try {
-    const { name, email, phone, address, company, notes } = await request.json();
+    const { name, email, phone, address, company, tin, vat, notes } = await request.json();
 
     const customer = await prisma.customer.create({
       data: {
@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
         phone,
         address,
         company,
+        tin,
+        vat,
         notes
       }
     });

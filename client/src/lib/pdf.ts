@@ -52,26 +52,23 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       // Header with red accent bar
       doc.rect(0, 0, doc.page.width, 8).fill(RED_COLOR);
       
-      // Logo and Company Header
+      // Logo and Company Header - no moveDown to avoid cursor/flow
       if (logoBuffer) {
-        doc.image(logoBuffer, 50, 20, { width: 150 });
-        doc.moveDown(4);
+        doc.image(logoBuffer, 50, 20, { width: 120, height: 40 });
       } else {
-        doc.moveDown();
         doc.fillColor(RED_COLOR).fontSize(18).font('Helvetica-Bold')
           .text('MAXVOLT', 50, 25, { continued: true })
           .fillColor(DARK_GRAY).text(' ELECTRICAL');
         doc.fillColor(LIGHT_GRAY).fontSize(F.small).font('Helvetica')
-          .text('The best way to power up', 50, 48);
-        doc.moveDown(2);
+          .text('The best way to power up', 50, 48, NO_BREAK);
       }
 
       // Quotation Title - fixed positions only
       const titleY = 90;
       doc.fillColor(RED_COLOR).fontSize(F.title).font('Helvetica-Bold')
-        .text('QUOTATION', 300, titleY, { width: 250, align: 'right', ...NO_BREAK });
+        .text('QUOTATION', 50, titleY, { width: 500, align: 'right', ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.sub).font('Helvetica')
-        .text(`#${quotation.quotationNumber}`, 300, titleY + 32, { width: 250, align: 'right', ...NO_BREAK });
+        .text(`#${quotation.quotationNumber}`, 50, titleY + 24, { width: 500, align: 'right', ...NO_BREAK });
 
       // Red divider line
       const dividerY = 140;
@@ -110,15 +107,15 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       const dateBoxY = 265;
       doc.rect(rightColumnX, dateBoxY, 180, 60).fillColor('#FEF2F2').fill();
       doc.fillColor(RED_COLOR).fontSize(F.small).font('Helvetica-Bold')
-        .text('Date:', rightColumnX + 10, dateBoxY + 10);
-      doc.fillColor(DARK_GRAY).font('Helvetica')
-        .text(new Date(quotation.createdAt).toLocaleDateString(), rightColumnX + 60, dateBoxY + 10);
+        .text('Date:', rightColumnX + 10, dateBoxY + 10, NO_BREAK);
+      doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
+        .text(new Date(quotation.createdAt).toLocaleDateString(), rightColumnX + 60, dateBoxY + 10, NO_BREAK);
       
       if (quotation.validUntil) {
         doc.fillColor(RED_COLOR).fontSize(F.small).font('Helvetica-Bold')
-          .text('Valid Until:', rightColumnX + 10, dateBoxY + 25);
-        doc.fillColor(DARK_GRAY).font('Helvetica')
-          .text(new Date(quotation.validUntil).toLocaleDateString(), rightColumnX + 60, dateBoxY + 25);
+          .text('Valid Until:', rightColumnX + 10, dateBoxY + 25, NO_BREAK);
+        doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
+          .text(new Date(quotation.validUntil).toLocaleDateString(), rightColumnX + 60, dateBoxY + 25, NO_BREAK);
       }
 
       // Items Table Header
@@ -126,10 +123,10 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.rect(50, tableTop, doc.page.width - 100, 20).fillColor(RED_COLOR).fill();
       
       doc.fillColor('#FFFFFF').fontSize(F.body).font('Helvetica-Bold');
-      doc.text('Description', 60, tableTop + 6);
-      doc.text('Qty', 350, tableTop + 8);
-      doc.text('Unit Price', 400, tableTop + 8);
-      doc.text('Total', 480, tableTop + 8);
+      doc.text('Description', 60, tableTop + 6, NO_BREAK);
+      doc.text('Qty', 350, tableTop + 8, NO_BREAK);
+      doc.text('Unit Price', 400, tableTop + 8, NO_BREAK);
+      doc.text('Total', 480, tableTop + 8, NO_BREAK);
 
       // Items (cap count so everything fits on one page)
       let itemY = tableTop + 24;
@@ -145,10 +142,10 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         }
         
         doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica');
-        doc.text(truncateText(String(item.description || ''), 120), 60, itemY, { width: 280, height: 18, ellipsis: true });
-        doc.text(String(item.quantity || 0), 350, itemY);
-        doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'USD'), 400, itemY);
-        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'USD'), 480, itemY);
+        doc.text(truncateText(String(item.description || ''), 60), 60, itemY, { width: 280, ...NO_BREAK });
+        doc.text(String(item.quantity || 0), 350, itemY, NO_BREAK);
+        doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'USD'), 400, itemY, NO_BREAK);
+        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'USD'), 480, itemY, NO_BREAK);
         itemY += 20;
       });
 
@@ -160,51 +157,50 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         itemY += 20;
       }
 
-      // Totals section - fixed top so it never pushes into a new page
+      // Totals section - fixed top
       const totalsTopY = 500;
       const totalsX = 380;
-      doc.y = totalsTopY;
       
       // Totals box
       doc.rect(totalsX - 10, totalsTopY - 5, 180, 80).fillColor('#FEF2F2').fill();
       
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text('Subtotal:', totalsX, totalsTopY);
+        .text('Subtotal:', totalsX, totalsTopY, NO_BREAK);
       doc.fillColor(DARK_GRAY)
-        .text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, totalsTopY);
+        .text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, totalsTopY, NO_BREAK);
       
       let totalsLineY = totalsTopY + 14;
       if (Number(quotation.tax) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, totalsLineY);
-        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, totalsLineY);
+        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, totalsLineY, NO_BREAK);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, totalsLineY, NO_BREAK);
         totalsLineY += 14;
       }
       
       if (Number(quotation.discount) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, totalsLineY);
-        doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, totalsLineY);
+        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, totalsLineY, NO_BREAK);
+        doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, totalsLineY, NO_BREAK);
         totalsLineY += 14;
       }
       
       doc.moveTo(totalsX, totalsTopY + 50).lineTo(550, totalsTopY + 50).strokeColor(RED_COLOR).lineWidth(1).stroke();
       
       doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold')
-        .text('TOTAL:', totalsX, totalsTopY + 60);
+        .text('TOTAL:', totalsX, totalsTopY + 60, NO_BREAK);
       doc.fillColor(RED_COLOR)
-        .text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, totalsTopY + 60);
+        .text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, totalsTopY + 60, NO_BREAK);
 
-      // Notes and Terms - fixed Y so they never create new pages
+      // Notes and Terms - NO wrapping: lineBreak false + truncate so no overflow
       const notesStartY = 580;
       if (quotation.notes) {
         doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Notes:', 50, notesStartY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-          .text(truncateText(quotation.notes, 600), 50, notesStartY + 14, { width: 500, height: 50 });
+          .text(truncateText(quotation.notes, 100), 50, notesStartY + 12, { width: 500, ...NO_BREAK });
       }
-      const termsY = quotation.notes ? notesStartY + 70 : notesStartY;
+      const termsY = quotation.notes ? notesStartY + 28 : notesStartY;
       if (quotation.terms) {
         doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Terms:', 50, termsY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-          .text(truncateText(quotation.terms, 700), 50, termsY + 14, { width: 500, height: 60 });
+          .text(truncateText(quotation.terms, 100), 50, termsY + 12, { width: 500, ...NO_BREAK });
       }
 
       // Bank Details - fixed Y and limited height

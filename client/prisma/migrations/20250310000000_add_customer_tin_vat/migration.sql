@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "tin" TEXT;
+ALTER TABLE "Customer" ADD COLUMN IF NOT EXISTS "vat" TEXT;

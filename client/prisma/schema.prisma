@@ -24,6 +24,8 @@ model Customer {
   phone       String
   address     String?
   company     String?
+  tin         String?  // Tax Identification Number
+  vat         String?  // VAT Number
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
