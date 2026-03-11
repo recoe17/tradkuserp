@@ -74,36 +74,37 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       const dividerY = 140;
       doc.moveTo(50, dividerY).lineTo(doc.page.width - 50, dividerY).strokeColor(RED_COLOR).lineWidth(2).stroke();
 
-      // Two-column layout - fixed Y positions
+      // Two-column layout - equal width, aligned left and right
+      const colWidth = 252;
       const leftColumnX = 50;
-      const rightColumnX = 320;
+      const rightColumnX = 50 + colWidth + 16;
       const infoStartY = 155;
 
-      // Company Info (Left) - fixed Y, no flow
+      // Company Info (Left) - all lines use colWidth for aligned right edge
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-        .text('FROM:', leftColumnX, infoStartY, NO_BREAK);
+        .text('FROM:', leftColumnX, infoStartY, { width: colWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(COMPANY.name, 60), leftColumnX, infoStartY + 12, { width: 250, ...NO_BREAK });
+        .text(truncateText(COMPANY.name, 60), leftColumnX, infoStartY + 12, { width: colWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text(truncateText(COMPANY.address, 45), leftColumnX, infoStartY + 24, { width: 250, ...NO_BREAK });
-      doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, infoStartY + 38, NO_BREAK);
-      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, infoStartY + 48, NO_BREAK);
-      doc.text(COMPANY.email, leftColumnX, infoStartY + 58, { width: 250, ...NO_BREAK });
-      doc.text(COMPANY.website, leftColumnX, infoStartY + 68, { width: 250, ...NO_BREAK });
+        .text(truncateText(COMPANY.address, 45), leftColumnX, infoStartY + 24, { width: colWidth, ...NO_BREAK });
+      doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, infoStartY + 38, { width: colWidth, ...NO_BREAK });
+      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, infoStartY + 48, { width: colWidth, ...NO_BREAK });
+      doc.text(COMPANY.email, leftColumnX, infoStartY + 58, { width: colWidth, ...NO_BREAK });
+      doc.text(COMPANY.website, leftColumnX, infoStartY + 68, { width: colWidth, ...NO_BREAK });
 
-      // Customer Info (Right)
+      // Customer Info (Right) - same colWidth for aligned blocks
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-        .text('TO:', rightColumnX, infoStartY, NO_BREAK);
+        .text('TO:', rightColumnX, infoStartY, { width: colWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(quotation.customer?.name || '', 60), rightColumnX, infoStartY + 12, { width: 250, ...NO_BREAK });
+        .text(truncateText(quotation.customer?.name || '', 60), rightColumnX, infoStartY + 12, { width: colWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica');
       const cust = quotation.customer || {};
-      doc.text(truncateText(cust.company || '', 60), rightColumnX, infoStartY + 24, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(cust.address || '', 45), rightColumnX, infoStartY + 36, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(cust.email || '', 60), rightColumnX, infoStartY + 48, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(cust.phone || '', 40), rightColumnX, infoStartY + 58, { width: 250, ...NO_BREAK });
-      if (cust.tin) doc.text(`TIN: ${cust.tin}`, rightColumnX, infoStartY + 70, { width: 250, ...NO_BREAK });
-      if (cust.vat) doc.text(`VAT: ${cust.vat}`, rightColumnX, infoStartY + 82, { width: 250, ...NO_BREAK });
+      doc.text(truncateText(cust.company || '', 60), rightColumnX, infoStartY + 24, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(cust.address || '', 45), rightColumnX, infoStartY + 36, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(cust.email || '', 60), rightColumnX, infoStartY + 48, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(cust.phone || '', 40), rightColumnX, infoStartY + 58, { width: colWidth, ...NO_BREAK });
+      if (cust.tin) doc.text(`TIN: ${cust.tin}`, rightColumnX, infoStartY + 70, { width: colWidth, ...NO_BREAK });
+      if (cust.vat) doc.text(`VAT: ${cust.vat}`, rightColumnX, infoStartY + 82, { width: colWidth, ...NO_BREAK });
 
       // Date info box
       const dateBoxY = 265;
@@ -288,36 +289,37 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       // Red divider line
       doc.moveTo(50, 155).lineTo(doc.page.width - 50, 155).strokeColor(RED_COLOR).lineWidth(2).stroke();
 
-      // Two-column layout - fixed Y
-      const leftColumnX = 50;
-      const rightColumnX = 320;
+      // Two-column layout - equal width, aligned left and right
+      const invColWidth = 252;
+      const invLeftX = 50;
+      const rightColumnX = 50 + invColWidth + 16;
       const invInfoY = 165;
 
-      // Company Info (Left)
+      // Company Info (Left) - all lines use invColWidth for aligned right edge
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-        .text('FROM:', leftColumnX, invInfoY, NO_BREAK);
+        .text('FROM:', invLeftX, invInfoY, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(COMPANY.name, 60), leftColumnX, invInfoY + 12, { width: 250, ...NO_BREAK });
+        .text(truncateText(COMPANY.name, 60), invLeftX, invInfoY + 12, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text(truncateText(COMPANY.address, 45), leftColumnX, invInfoY + 28, { width: 250, ...NO_BREAK });
-      doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, invInfoY + 48, NO_BREAK);
-      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, invInfoY + 60, NO_BREAK);
-      doc.text(COMPANY.email, leftColumnX, invInfoY + 72, { width: 250, ...NO_BREAK });
-      doc.text(COMPANY.website, leftColumnX, invInfoY + 84, { width: 250, ...NO_BREAK });
+        .text(truncateText(COMPANY.address, 45), invLeftX, invInfoY + 28, { width: invColWidth, ...NO_BREAK });
+      doc.text(`TIN: ${COMPANY.tin}`, invLeftX, invInfoY + 48, { width: invColWidth, ...NO_BREAK });
+      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, invLeftX, invInfoY + 60, { width: invColWidth, ...NO_BREAK });
+      doc.text(COMPANY.email, invLeftX, invInfoY + 72, { width: invColWidth, ...NO_BREAK });
+      doc.text(COMPANY.website, invLeftX, invInfoY + 84, { width: invColWidth, ...NO_BREAK });
 
-      // Customer Info (Right)
+      // Customer Info (Right) - same invColWidth for aligned blocks
       const invCust = invoice.customer || {};
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-        .text('TO:', rightColumnX, invInfoY, NO_BREAK);
+        .text('TO:', rightColumnX, invInfoY, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(invCust.name || '', 60), rightColumnX, invInfoY + 14, { width: 250, ...NO_BREAK });
+        .text(truncateText(invCust.name || '', 60), rightColumnX, invInfoY + 14, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica');
-      doc.text(truncateText(invCust.company || '', 60), rightColumnX, invInfoY + 24, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(invCust.address || '', 45), rightColumnX, invInfoY + 42, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(invCust.email || '', 60), rightColumnX, invInfoY + 62, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(invCust.phone || '', 40), rightColumnX, invInfoY + 74, { width: 250, ...NO_BREAK });
-      if (invCust.tin) doc.text(`TIN: ${invCust.tin}`, rightColumnX, invInfoY + 86, { width: 250, ...NO_BREAK });
-      if (invCust.vat) doc.text(`VAT: ${invCust.vat}`, rightColumnX, invInfoY + 98, { width: 250, ...NO_BREAK });
+      doc.text(truncateText(invCust.company || '', 60), rightColumnX, invInfoY + 24, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.address || '', 45), rightColumnX, invInfoY + 42, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.email || '', 60), rightColumnX, invInfoY + 62, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.phone || '', 40), rightColumnX, invInfoY + 74, { width: invColWidth, ...NO_BREAK });
+      if (invCust.tin) doc.text(`TIN: ${invCust.tin}`, rightColumnX, invInfoY + 86, { width: invColWidth, ...NO_BREAK });
+      if (invCust.vat) doc.text(`VAT: ${invCust.vat}`, rightColumnX, invInfoY + 98, { width: invColWidth, ...NO_BREAK });
 
       // Date info box
       const dateBoxY = 265;
@@ -484,32 +486,33 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       const customer = invoice?.customer || { name: '', company: '', address: '', email: '', phone: '' };
       const currency = invoice?.currency || 'USD';
 
+      const recColWidth = 252;
       const leftColumnX = 50;
-      const rightColumnX = 320;
+      const rightColumnX = 50 + recColWidth + 16;
       const recInfoY = 165;
 
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-        .text('FROM:', leftColumnX, recInfoY, NO_BREAK);
+        .text('FROM:', leftColumnX, recInfoY, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(COMPANY.name, 60), leftColumnX, recInfoY + 14, { width: 250, ...NO_BREAK });
+        .text(truncateText(COMPANY.name, 60), leftColumnX, recInfoY + 14, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text(truncateText(COMPANY.address, 45), leftColumnX, recInfoY + 28, { width: 250, ...NO_BREAK })
-        .text(`TIN: ${COMPANY.tin}`, leftColumnX, recInfoY + 42, NO_BREAK)
-        .text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, recInfoY + 54, NO_BREAK)
-        .text(COMPANY.email, leftColumnX, recInfoY + 66, { width: 250, ...NO_BREAK })
-        .text(COMPANY.website, leftColumnX, recInfoY + 78, { width: 250, ...NO_BREAK });
+        .text(truncateText(COMPANY.address, 45), leftColumnX, recInfoY + 28, { width: recColWidth, ...NO_BREAK })
+        .text(`TIN: ${COMPANY.tin}`, leftColumnX, recInfoY + 42, { width: recColWidth, ...NO_BREAK })
+        .text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, recInfoY + 54, { width: recColWidth, ...NO_BREAK })
+        .text(COMPANY.email, leftColumnX, recInfoY + 66, { width: recColWidth, ...NO_BREAK })
+        .text(COMPANY.website, leftColumnX, recInfoY + 78, { width: recColWidth, ...NO_BREAK });
 
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-        .text('RECEIVED FROM:', rightColumnX, recInfoY, NO_BREAK);
+        .text('RECEIVED FROM:', rightColumnX, recInfoY, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(customer.name, 60), rightColumnX, recInfoY + 14, { width: 250, ...NO_BREAK });
+        .text(truncateText(customer.name, 60), rightColumnX, recInfoY + 14, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica');
-      doc.text(truncateText(customer.company || '', 60), rightColumnX, recInfoY + 28, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(customer.address || '', 45), rightColumnX, recInfoY + 42, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(customer.email || '', 60), rightColumnX, recInfoY + 56, { width: 250, ...NO_BREAK });
-      doc.text(truncateText(customer.phone || '', 40), rightColumnX, recInfoY + 70, { width: 250, ...NO_BREAK });
-      if (customer.tin) doc.text(`TIN: ${customer.tin}`, rightColumnX, recInfoY + 84, { width: 250, ...NO_BREAK });
-      if (customer.vat) doc.text(`VAT: ${customer.vat}`, rightColumnX, recInfoY + 96, { width: 250, ...NO_BREAK });
+      doc.text(truncateText(customer.company || '', 60), rightColumnX, recInfoY + 28, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.address || '', 45), rightColumnX, recInfoY + 42, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.email || '', 60), rightColumnX, recInfoY + 56, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.phone || '', 40), rightColumnX, recInfoY + 70, { width: recColWidth, ...NO_BREAK });
+      if (customer.tin) doc.text(`TIN: ${customer.tin}`, rightColumnX, recInfoY + 84, { width: recColWidth, ...NO_BREAK });
+      if (customer.vat) doc.text(`VAT: ${customer.vat}`, rightColumnX, recInfoY + 96, { width: recColWidth, ...NO_BREAK });
 
       const recDetailY = 290;
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Payment details', 50, recDetailY, NO_BREAK);
