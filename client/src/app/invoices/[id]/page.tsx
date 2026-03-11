@@ -47,6 +47,8 @@ interface Invoice {
     phone: string;
     company: string | null;
     address: string | null;
+    tin?: string | null;
+    vat?: string | null;
   };
   job: {
     id: string;
