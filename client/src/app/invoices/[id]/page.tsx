@@ -334,24 +334,26 @@ export default function InvoiceViewPage() {
               <div>
                 <h4 className="text-sm font-medium text-red-600 mb-2">BILL TO</h4>
                 <p className="text-gray-900 font-medium">{invoice.customer.name}</p>
-                {invoice.customer.company && (
-                  <p className="text-gray-600">{invoice.customer.company}</p>
-                )}
-                {invoice.customer.address && (
-                  <p className="text-gray-600">{invoice.customer.address}</p>
-                )}
-                {invoice.customer.email && (
-                  <p className="text-gray-600">{invoice.customer.email}</p>
-                )}
-                {invoice.customer.phone && (
-                  <p className="text-gray-600">{invoice.customer.phone}</p>
-                )}
-                {invoice.customer.tin && (
-                  <p className="text-gray-600">TIN: {invoice.customer.tin}</p>
-                )}
-                {invoice.customer.vat && (
-                  <p className="text-gray-600">VAT: {invoice.customer.vat}</p>
-                )}
+                <div className="mt-1 space-y-1 text-sm text-gray-600">
+                  {invoice.customer.company && (
+                    <p><span className="inline-block w-14 text-gray-500">Company:</span> {invoice.customer.company}</p>
+                  )}
+                  {invoice.customer.address && (
+                    <p><span className="inline-block w-14 text-gray-500">Address:</span> {invoice.customer.address}</p>
+                  )}
+                  {invoice.customer.email && (
+                    <p><span className="inline-block w-14 text-gray-500">Email:</span> {invoice.customer.email}</p>
+                  )}
+                  {invoice.customer.phone && (
+                    <p><span className="inline-block w-14 text-gray-500">Phone:</span> {invoice.customer.phone}</p>
+                  )}
+                  {invoice.customer.tin && (
+                    <p><span className="inline-block w-14 text-gray-500">TIN:</span> {invoice.customer.tin}</p>
+                  )}
+                  {invoice.customer.vat && (
+                    <p><span className="inline-block w-14 text-gray-500">VAT:</span> {invoice.customer.vat}</p>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-gray-600">

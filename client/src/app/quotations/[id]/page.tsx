@@ -375,24 +375,26 @@ export default function QuotationViewPage() {
               <div>
                 <h4 className="text-sm font-medium text-red-600 mb-2">BILL TO</h4>
                 <p className="text-gray-900 font-medium">{quotation.customer.name}</p>
-                {quotation.customer.company && (
-                  <p className="text-gray-600">{quotation.customer.company}</p>
-                )}
-                {quotation.customer.address && (
-                  <p className="text-gray-600">{quotation.customer.address}</p>
-                )}
-                {quotation.customer.email && (
-                  <p className="text-gray-600">{quotation.customer.email}</p>
-                )}
-                {quotation.customer.phone && (
-                  <p className="text-gray-600">{quotation.customer.phone}</p>
-                )}
-                {quotation.customer.tin && (
-                  <p className="text-gray-600">TIN: {quotation.customer.tin}</p>
-                )}
-                {quotation.customer.vat && (
-                  <p className="text-gray-600">VAT: {quotation.customer.vat}</p>
-                )}
+                <div className="mt-1 space-y-1 text-sm text-gray-600">
+                  {quotation.customer.company && (
+                    <p><span className="inline-block w-14 text-gray-500">Company:</span> {quotation.customer.company}</p>
+                  )}
+                  {quotation.customer.address && (
+                    <p><span className="inline-block w-14 text-gray-500">Address:</span> {quotation.customer.address}</p>
+                  )}
+                  {quotation.customer.email && (
+                    <p><span className="inline-block w-14 text-gray-500">Email:</span> {quotation.customer.email}</p>
+                  )}
+                  {quotation.customer.phone && (
+                    <p><span className="inline-block w-14 text-gray-500">Phone:</span> {quotation.customer.phone}</p>
+                  )}
+                  {quotation.customer.tin && (
+                    <p><span className="inline-block w-14 text-gray-500">TIN:</span> {quotation.customer.tin}</p>
+                  )}
+                  {quotation.customer.vat && (
+                    <p><span className="inline-block w-14 text-gray-500">VAT:</span> {quotation.customer.vat}</p>
+                  )}
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-gray-600">

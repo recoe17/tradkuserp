@@ -108,30 +108,38 @@ export default function CustomersPage() {
                           <span className="ml-2 text-sm text-gray-500">({customer.company})</span>
                         )}
                       </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 space-x-4">
+                      <div className="mt-2 space-y-1 text-sm text-gray-500">
                         {customer.phone && (
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 mr-1" />
+                          <div className="flex gap-x-2">
+                            <span className="inline-flex items-center w-20 shrink-0 text-gray-500"><Phone className="h-4 w-4 mr-1" />Phone</span>
                             {customer.phone}
                           </div>
                         )}
                         {customer.email && (
-                          <div className="flex items-center">
-                            <Mail className="h-4 w-4 mr-1" />
+                          <div className="flex gap-x-2">
+                            <span className="inline-flex items-center w-20 shrink-0 text-gray-500"><Mail className="h-4 w-4 mr-1" />Email</span>
                             {customer.email}
                           </div>
                         )}
+                        {customer.address && (
+                          <div className="flex gap-x-2">
+                            <span className="inline-block w-20 shrink-0 text-gray-500">Address</span>
+                            {customer.address}
+                          </div>
+                        )}
+                        {c.tin && (
+                          <div className="flex gap-x-2">
+                            <span className="inline-block w-20 shrink-0 text-gray-500">TIN</span>
+                            {c.tin}
+                          </div>
+                        )}
+                        {c.vat && (
+                          <div className="flex gap-x-2">
+                            <span className="inline-block w-20 shrink-0 text-gray-500">VAT</span>
+                            {c.vat}
+                          </div>
+                        )}
                       </div>
-                      {customer.address && (
-                        <p className="mt-1 text-sm text-gray-500">{customer.address}</p>
-                      )}
-                      {(c.tin || c.vat) && (
-                        <p className="mt-1 text-sm text-gray-500">
-                          {c.tin && <span>TIN: {c.tin}</span>}
-                          {c.tin && c.vat && ' · '}
-                          {c.vat && <span>VAT: {c.vat}</span>}
-                        </p>
-                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Link
