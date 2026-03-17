@@ -80,31 +80,33 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       const rightColumnX = 50 + colWidth + 16;
       const infoStartY = 155;
 
+      const lineH = 10; // compact line height so TIN/VAT stay visible
       // Company Info (Left) - all lines use colWidth for aligned right edge
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('FROM:', leftColumnX, infoStartY, { width: colWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(COMPANY.name, 60), leftColumnX, infoStartY + 12, { width: colWidth, ...NO_BREAK });
+        .text(truncateText(COMPANY.name, 60), leftColumnX, infoStartY + lineH, { width: colWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text(truncateText(COMPANY.address, 45), leftColumnX, infoStartY + 24, { width: colWidth, ...NO_BREAK });
-      doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, infoStartY + 38, { width: colWidth, ...NO_BREAK });
-      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, infoStartY + 48, { width: colWidth, ...NO_BREAK });
-      doc.text(COMPANY.email, leftColumnX, infoStartY + 58, { width: colWidth, ...NO_BREAK });
-      doc.text(COMPANY.website, leftColumnX, infoStartY + 68, { width: colWidth, ...NO_BREAK });
+        .text(truncateText(COMPANY.address, 45), leftColumnX, infoStartY + lineH * 2, { width: colWidth, ...NO_BREAK });
+      doc.text(`TIN: ${COMPANY.tin}`, leftColumnX, infoStartY + lineH * 3, { width: colWidth, ...NO_BREAK });
+      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, infoStartY + lineH * 4, { width: colWidth, ...NO_BREAK });
+      doc.text(COMPANY.email, leftColumnX, infoStartY + lineH * 5, { width: colWidth, ...NO_BREAK });
+      doc.text(COMPANY.website, leftColumnX, infoStartY + lineH * 6, { width: colWidth, ...NO_BREAK });
 
-      // Customer Info (Right) - same colWidth for aligned blocks
+      // Customer Info (Right) - always show all fields
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('TO:', rightColumnX, infoStartY, { width: colWidth, ...NO_BREAK });
+      const cust = quotation.customer ?? {};
+      const c = (v: any) => (v != null && String(v).trim()) ? String(v).trim() : '';
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(quotation.customer?.name || '', 60), rightColumnX, infoStartY + 12, { width: colWidth, ...NO_BREAK });
+        .text(truncateText(c(cust.name) || '—', 60), rightColumnX, infoStartY + lineH, { width: colWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica');
-      const cust = quotation.customer || {};
-      doc.text(truncateText(cust.company || '', 60), rightColumnX, infoStartY + 24, { width: colWidth, ...NO_BREAK });
-      doc.text(truncateText(cust.address || '', 45), rightColumnX, infoStartY + 36, { width: colWidth, ...NO_BREAK });
-      doc.text(truncateText(cust.email || '', 60), rightColumnX, infoStartY + 48, { width: colWidth, ...NO_BREAK });
-      doc.text(truncateText(cust.phone || '', 40), rightColumnX, infoStartY + 58, { width: colWidth, ...NO_BREAK });
-      if (cust.tin) doc.text(`TIN: ${cust.tin}`, rightColumnX, infoStartY + 70, { width: colWidth, ...NO_BREAK });
-      if (cust.vat) doc.text(`VAT: ${cust.vat}`, rightColumnX, infoStartY + 82, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(c(cust.company) || '—', 60), rightColumnX, infoStartY + lineH * 2, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(c(cust.address) || '—', 45), rightColumnX, infoStartY + lineH * 3, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(c(cust.email) || '—', 60), rightColumnX, infoStartY + lineH * 4, { width: colWidth, ...NO_BREAK });
+      doc.text(truncateText(c(cust.phone) || '—', 40), rightColumnX, infoStartY + lineH * 5, { width: colWidth, ...NO_BREAK });
+      doc.text(`TIN: ${c(cust.tin) || '—'}`, rightColumnX, infoStartY + lineH * 6, { width: colWidth, ...NO_BREAK });
+      doc.text(`VAT: ${c(cust.vat) || '—'}`, rightColumnX, infoStartY + lineH * 7, { width: colWidth, ...NO_BREAK });
 
       // Date info box
       const dateBoxY = 265;
@@ -121,111 +123,111 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
           .text(new Date(quotation.validUntil).toLocaleDateString(), rightColumnX + 60, dateBoxY + 25, NO_BREAK);
       }
 
-      // Items Table Header
-      const tableTop = 300;
-      doc.rect(50, tableTop, doc.page.width - 100, 20).fillColor(RED_COLOR).fill();
-      
-      doc.fillColor('#FFFFFF').fontSize(F.body).font('Helvetica-Bold');
-      doc.text('Description', 60, tableTop + 6, NO_BREAK);
-      doc.text('Qty', 350, tableTop + 8, NO_BREAK);
-      doc.text('Unit Price', 400, tableTop + 8, NO_BREAK);
-      doc.text('Total', 480, tableTop + 8, NO_BREAK);
-
-      // Items (cap count so everything fits on one page)
-      let itemY = tableTop + 24;
+      // Items: fill page 1, then page 2, etc. Totals at end of items. Bank fixed at bottom.
       const items = Array.isArray(quotation.items) ? quotation.items : [];
-      const maxItemsToShow = 6;
-      const itemsToShow = items.slice(0, maxItemsToShow);
-      const remainingItems = items.length - itemsToShow.length;
-      
-      itemsToShow.forEach((item: any, index: number) => {
-        // Alternate row background
-        if (index % 2 === 0) {
+      const rowHeight = 20;
+      const pageHeight = 842;
+      const footerHeight = 40;
+      const banksToShow = COMPANY.banks;
+      const bankBoxHeightCalc = banksToShow.length * 50 + 20;
+      const bankYStart = pageHeight - footerHeight - bankBoxHeightCalc - 15;
+      const itemsBottomLimit = 700;
+
+      const drawTableHeader = (y: number) => {
+        doc.rect(50, y, doc.page.width - 100, 20).fillColor(RED_COLOR).fill();
+        doc.fillColor('#FFFFFF').fontSize(F.body).font('Helvetica-Bold');
+        doc.text('Description', 60, y + 6, NO_BREAK);
+        doc.text('Qty', 350, y + 8, NO_BREAK);
+        doc.text('Unit Price', 400, y + 8, NO_BREAK);
+        doc.text('Total', 480, y + 8, NO_BREAK);
+      };
+
+      let itemY = 324;
+      let isFirstItemsPage = true;
+      let rowIndex = 0;
+
+      drawTableHeader(300);
+      itemY += 24;
+
+      items.forEach((item: any) => {
+        if (itemY + rowHeight > itemsBottomLimit) {
+          doc.addPage({ size: 'A4', margin: 50 });
+          isFirstItemsPage = false;
+          doc.fillColor(LIGHT_GRAY).fontSize(F.small).font('Helvetica').text('Items (continued)', 50, 55, NO_BREAK);
+          itemY = 74;
+          drawTableHeader(65);
+          itemY += 24;
+        }
+        if (rowIndex % 2 === 0) {
           doc.rect(50, itemY - 4, doc.page.width - 100, 20).fillColor('#F9FAFB').fill();
         }
-        
         doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica');
         doc.text(truncateText(String(item.description || ''), 60), 60, itemY, { width: 280, ...NO_BREAK });
         doc.text(String(item.quantity || 0), 350, itemY, NO_BREAK);
         doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'USD'), 400, itemY, NO_BREAK);
         doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'USD'), 480, itemY, NO_BREAK);
-        itemY += 20;
+        itemY += rowHeight;
+        rowIndex++;
       });
 
-      if (remainingItems > 0) {
-        // Summary row for extra items
-        doc.rect(50, itemY - 4, doc.page.width - 100, 20).fillColor('#F3F4F6').fill();
-        doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica-Oblique');
-        doc.text(`+ ${remainingItems} more item(s)`, 60, itemY, { width: 380, ...NO_BREAK });
-        itemY += 20;
-      }
-
-      // Totals section - fixed top
-      const totalsTopY = 500;
+      // Totals at end of items; bank fixed at bottom
       const totalsX = 380;
-      
-      // Totals box
-      doc.rect(totalsX - 10, totalsTopY - 5, 180, 80).fillColor('#FEF2F2').fill();
-      
-      doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text('Subtotal:', totalsX, totalsTopY, NO_BREAK);
-      doc.fillColor(DARK_GRAY)
-        .text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, totalsTopY, NO_BREAK);
-      
-      let totalsLineY = totalsTopY + 14;
-      if (Number(quotation.tax) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, totalsLineY, NO_BREAK);
-        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, totalsLineY, NO_BREAK);
-        totalsLineY += 14;
-      }
-      
-      if (Number(quotation.discount) > 0) {
-        doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, totalsLineY, NO_BREAK);
-        doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, totalsLineY, NO_BREAK);
-        totalsLineY += 14;
-      }
-      
-      doc.moveTo(totalsX, totalsTopY + 50).lineTo(550, totalsTopY + 50).strokeColor(RED_COLOR).lineWidth(1).stroke();
-      
-      doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold')
-        .text('TOTAL:', totalsX, totalsTopY + 60, NO_BREAK);
-      doc.fillColor(RED_COLOR)
-        .text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, totalsTopY + 60, NO_BREAK);
+      const totalsTopY = itemY + 30;
+      const contentY = totalsTopY + 95 + (quotation.notes ? 45 : 0) + (quotation.terms ? 45 : 0);
 
-      // Notes and Terms - NO wrapping: lineBreak false + truncate so no overflow
-      const notesStartY = 580;
-      if (quotation.notes) {
-        doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Notes:', 50, notesStartY, NO_BREAK);
-        doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-          .text(truncateText(quotation.notes, 100), 50, notesStartY + 12, { width: 500, ...NO_BREAK });
-      }
-      const termsY = quotation.notes ? notesStartY + 28 : notesStartY;
-      if (quotation.terms) {
-        doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Terms:', 50, termsY, NO_BREAK);
-        doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-          .text(truncateText(quotation.terms, 100), 50, termsY + 12, { width: 500, ...NO_BREAK });
+      const drawSummary = (startY: number) => {
+        doc.rect(totalsX - 10, startY - 5, 180, 80).fillColor('#FEF2F2').fill();
+        doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica').text('Subtotal:', totalsX, startY, NO_BREAK);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, startY, NO_BREAK);
+        let ly = startY + 14;
+        if (Number(quotation.tax) > 0) {
+          doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, ly, NO_BREAK);
+          doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, ly, NO_BREAK);
+          ly += 14;
+        }
+        if (Number(quotation.discount) > 0) {
+          doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, ly, NO_BREAK);
+          doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, ly, NO_BREAK);
+        }
+        doc.moveTo(totalsX, startY + 50).lineTo(550, startY + 50).strokeColor(RED_COLOR).lineWidth(1).stroke();
+        doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('TOTAL:', totalsX, startY + 60, NO_BREAK);
+        doc.fillColor(RED_COLOR).text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, startY + 60, NO_BREAK);
+        let cY = startY + 95;
+        if (quotation.notes) {
+          doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Notes:', 50, cY, NO_BREAK);
+          doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica').text(truncateText(quotation.notes, 100), 50, cY + 12, { width: 500, ...NO_BREAK });
+          cY += 45;
+        }
+        if (quotation.terms) {
+          doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Terms:', 50, cY, NO_BREAK);
+          doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica').text(truncateText(quotation.terms, 100), 50, cY + 12, { width: 500, ...NO_BREAK });
+        }
+      };
+
+      // Add summary page only if totals+notes+terms don't fit above bank
+      if (contentY > bankYStart - 20) {
+        doc.addPage({ size: 'A4', margin: 50 });
+        drawSummary(55);
+      } else {
+        drawSummary(totalsTopY);
       }
 
-      // Bank Details - fixed Y and limited height
-      const bankYStart = 720;
-      const banksToShow = COMPANY.banks.slice(0, 1);
-      const bankBoxHeight = banksToShow.length * 40 + 15;
-      doc.rect(50, bankYStart, doc.page.width - 100, bankBoxHeight).strokeColor('#E5E7EB').lineWidth(1).stroke();
-      let bankY = bankYStart + 10;
-      banksToShow.forEach((bank) => {
+      // Bank details fixed at bottom
+      doc.rect(50, bankYStart, doc.page.width - 100, bankBoxHeightCalc).strokeColor('#E5E7EB').lineWidth(1).stroke();
+      let bankY = bankYStart + 12;
+      banksToShow.forEach((bank: any) => {
         doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
           .text(`Bank Details (${bank.title})`, 60, bankY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-          .text(`Bank: ${bank.name}`, 60, bankY + 12, { width: 250, ...NO_BREAK })
-          .text(`Acc: ${bank.accountNumber}`, 60, bankY + 24, { width: 250, ...NO_BREAK });
-        bankY += 40;
+          .text(`Bank: ${bank.name}`, 60, bankY + 12, { width: 400, ...NO_BREAK })
+          .text(`Acc: ${bank.accountNumber}`, 60, bankY + 24, { width: 400, ...NO_BREAK });
+        bankY += 50;
       });
 
-      // Footer - fixed position, no flow
-      const pageHeight = 842;
-      doc.rect(0, pageHeight - 40, doc.page.width, 40).fill(RED_COLOR);
+      // Footer - fixed at very bottom of page
+      doc.rect(0, pageHeight - footerHeight, doc.page.width, footerHeight).fill(RED_COLOR);
       doc.fillColor('#FFFFFF').fontSize(F.body).font('Helvetica')
-        .text('Thank you for your business!', 50, pageHeight - 28, { width: doc.page.width - 100, align: 'center', ...NO_BREAK });
+        .text('Thank you for your business!', 50, pageHeight - footerHeight + 12, { width: doc.page.width - 100, align: 'center', ...NO_BREAK });
 
       doc.end();
     } catch (error) {
@@ -295,31 +297,32 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       const rightColumnX = 50 + invColWidth + 16;
       const invInfoY = 165;
 
+      const invLineH = 10; // compact line height so TIN/VAT stay visible
       // Company Info (Left) - all lines use invColWidth for aligned right edge
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('FROM:', invLeftX, invInfoY, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(COMPANY.name, 60), invLeftX, invInfoY + 12, { width: invColWidth, ...NO_BREAK });
+        .text(truncateText(COMPANY.name, 60), invLeftX, invInfoY + invLineH, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text(truncateText(COMPANY.address, 45), invLeftX, invInfoY + 28, { width: invColWidth, ...NO_BREAK });
-      doc.text(`TIN: ${COMPANY.tin}`, invLeftX, invInfoY + 48, { width: invColWidth, ...NO_BREAK });
-      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, invLeftX, invInfoY + 60, { width: invColWidth, ...NO_BREAK });
-      doc.text(COMPANY.email, invLeftX, invInfoY + 72, { width: invColWidth, ...NO_BREAK });
-      doc.text(COMPANY.website, invLeftX, invInfoY + 84, { width: invColWidth, ...NO_BREAK });
+        .text(truncateText(COMPANY.address, 45), invLeftX, invInfoY + invLineH * 2, { width: invColWidth, ...NO_BREAK });
+      doc.text(`TIN: ${COMPANY.tin}`, invLeftX, invInfoY + invLineH * 3, { width: invColWidth, ...NO_BREAK });
+      doc.text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, invLeftX, invInfoY + invLineH * 4, { width: invColWidth, ...NO_BREAK });
+      doc.text(COMPANY.email, invLeftX, invInfoY + invLineH * 5, { width: invColWidth, ...NO_BREAK });
+      doc.text(COMPANY.website, invLeftX, invInfoY + invLineH * 6, { width: invColWidth, ...NO_BREAK });
 
-      // Customer Info (Right) - same invColWidth for aligned blocks
+      // Customer Info (Right) - compact spacing so TIN/VAT visible
       const invCust = invoice.customer || {};
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('TO:', rightColumnX, invInfoY, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(invCust.name || '', 60), rightColumnX, invInfoY + 14, { width: invColWidth, ...NO_BREAK });
+        .text(truncateText(invCust.name || '', 60), rightColumnX, invInfoY + invLineH, { width: invColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica');
-      doc.text(truncateText(invCust.company || '', 60), rightColumnX, invInfoY + 24, { width: invColWidth, ...NO_BREAK });
-      doc.text(truncateText(invCust.address || '', 45), rightColumnX, invInfoY + 42, { width: invColWidth, ...NO_BREAK });
-      doc.text(truncateText(invCust.email || '', 60), rightColumnX, invInfoY + 62, { width: invColWidth, ...NO_BREAK });
-      doc.text(truncateText(invCust.phone || '', 40), rightColumnX, invInfoY + 74, { width: invColWidth, ...NO_BREAK });
-      if (invCust.tin) doc.text(`TIN: ${invCust.tin}`, rightColumnX, invInfoY + 86, { width: invColWidth, ...NO_BREAK });
-      if (invCust.vat) doc.text(`VAT: ${invCust.vat}`, rightColumnX, invInfoY + 98, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.company || '', 60), rightColumnX, invInfoY + invLineH * 2, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.address || '', 45), rightColumnX, invInfoY + invLineH * 3, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.email || '', 60), rightColumnX, invInfoY + invLineH * 4, { width: invColWidth, ...NO_BREAK });
+      doc.text(truncateText(invCust.phone || '', 40), rightColumnX, invInfoY + invLineH * 5, { width: invColWidth, ...NO_BREAK });
+      if (invCust.tin) doc.text(`TIN: ${invCust.tin}`, rightColumnX, invInfoY + invLineH * 6, { width: invColWidth, ...NO_BREAK });
+      if (invCust.vat) doc.text(`VAT: ${invCust.vat}`, rightColumnX, invInfoY + invLineH * 7, { width: invColWidth, ...NO_BREAK });
 
       // Date info box
       const dateBoxY = 265;
@@ -486,33 +489,53 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       const customer = invoice?.customer || { name: '', company: '', address: '', email: '', phone: '' };
       const currency = invoice?.currency || 'USD';
 
+      const itemPurpose = (() => {
+        const items = Array.isArray(invoice?.items) ? invoice.items : [];
+        const descs = items
+          .map((it: any) => (it?.description != null ? String(it.description).trim() : ''))
+          .filter(Boolean);
+        if (descs.length === 0) return '';
+        // Keep it short and readable on one line
+        const unique = Array.from(new Set(descs));
+        return unique.slice(0, 2).join(' / ');
+      })();
+
+      // Prefer the actual invoice item description(s) over job title for receipts.
+      const purpose =
+        (payment.notes && String(payment.notes).trim()) ||
+        itemPurpose ||
+        (invoice?.job?.title && String(invoice.job.title).trim()) ||
+        (invoice?.notes && String(invoice.notes).trim()) ||
+        (invoice?.invoiceNumber ? `Payment for Invoice #${invoice.invoiceNumber}` : 'Payment');
+
       const recColWidth = 252;
       const leftColumnX = 50;
       const rightColumnX = 50 + recColWidth + 16;
       const recInfoY = 165;
 
+      const recLineH = 10; // compact line height so TIN/VAT stay visible
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('FROM:', leftColumnX, recInfoY, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(COMPANY.name, 60), leftColumnX, recInfoY + 14, { width: recColWidth, ...NO_BREAK });
+        .text(truncateText(COMPANY.name, 60), leftColumnX, recInfoY + recLineH, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
-        .text(truncateText(COMPANY.address, 45), leftColumnX, recInfoY + 28, { width: recColWidth, ...NO_BREAK })
-        .text(`TIN: ${COMPANY.tin}`, leftColumnX, recInfoY + 42, { width: recColWidth, ...NO_BREAK })
-        .text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, recInfoY + 54, { width: recColWidth, ...NO_BREAK })
-        .text(COMPANY.email, leftColumnX, recInfoY + 66, { width: recColWidth, ...NO_BREAK })
-        .text(COMPANY.website, leftColumnX, recInfoY + 78, { width: recColWidth, ...NO_BREAK });
+        .text(truncateText(COMPANY.address, 45), leftColumnX, recInfoY + recLineH * 2, { width: recColWidth, ...NO_BREAK })
+        .text(`TIN: ${COMPANY.tin}`, leftColumnX, recInfoY + recLineH * 3, { width: recColWidth, ...NO_BREAK })
+        .text(`${COMPANY.phone} | ${COMPANY.phoneAlt}`, leftColumnX, recInfoY + recLineH * 4, { width: recColWidth, ...NO_BREAK })
+        .text(COMPANY.email, leftColumnX, recInfoY + recLineH * 5, { width: recColWidth, ...NO_BREAK })
+        .text(COMPANY.website, leftColumnX, recInfoY + recLineH * 6, { width: recColWidth, ...NO_BREAK });
 
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('RECEIVED FROM:', rightColumnX, recInfoY, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
-        .text(truncateText(customer.name, 60), rightColumnX, recInfoY + 14, { width: recColWidth, ...NO_BREAK });
+        .text(truncateText(customer.name, 60), rightColumnX, recInfoY + recLineH, { width: recColWidth, ...NO_BREAK });
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica');
-      doc.text(truncateText(customer.company || '', 60), rightColumnX, recInfoY + 28, { width: recColWidth, ...NO_BREAK });
-      doc.text(truncateText(customer.address || '', 45), rightColumnX, recInfoY + 42, { width: recColWidth, ...NO_BREAK });
-      doc.text(truncateText(customer.email || '', 60), rightColumnX, recInfoY + 56, { width: recColWidth, ...NO_BREAK });
-      doc.text(truncateText(customer.phone || '', 40), rightColumnX, recInfoY + 70, { width: recColWidth, ...NO_BREAK });
-      if (customer.tin) doc.text(`TIN: ${customer.tin}`, rightColumnX, recInfoY + 84, { width: recColWidth, ...NO_BREAK });
-      if (customer.vat) doc.text(`VAT: ${customer.vat}`, rightColumnX, recInfoY + 96, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.company || '', 60), rightColumnX, recInfoY + recLineH * 2, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.address || '', 45), rightColumnX, recInfoY + recLineH * 3, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.email || '', 60), rightColumnX, recInfoY + recLineH * 4, { width: recColWidth, ...NO_BREAK });
+      doc.text(truncateText(customer.phone || '', 40), rightColumnX, recInfoY + recLineH * 5, { width: recColWidth, ...NO_BREAK });
+      if (customer.tin) doc.text(`TIN: ${customer.tin}`, rightColumnX, recInfoY + recLineH * 6, { width: recColWidth, ...NO_BREAK });
+      if (customer.vat) doc.text(`VAT: ${customer.vat}`, rightColumnX, recInfoY + recLineH * 7, { width: recColWidth, ...NO_BREAK });
 
       const recDetailY = 290;
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Payment details', 50, recDetailY, NO_BREAK);
@@ -524,9 +547,10 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       if (payment.reference) {
         doc.text(`Reference: ${payment.reference}`, 50, recDetailY + 74, NO_BREAK);
       }
+      doc.text(`For: ${truncateText(purpose, 90)}`, 50, recDetailY + 88, NO_BREAK);
 
       doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold')
-        .text(`Amount Received: ${formatAmount(Number(payment.amount), currency)}`, 50, recDetailY + 110, NO_BREAK);
+        .text(`Amount Received: ${formatAmount(Number(payment.amount), currency)}`, 50, recDetailY + 118, NO_BREAK);
 
       const recPageH = 842;
       doc.rect(0, recPageH - 40, doc.page.width, 40).fill(RED_COLOR);

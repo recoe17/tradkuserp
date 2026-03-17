@@ -16,10 +16,7 @@ export async function GET(
     const { id } = await params;
     const quotation = await prisma.quotation.findUnique({
       where: { id },
-      include: {
-        customer: true,
-        job: true
-      }
+      include: { customer: true, job: true }
     });
 
     if (!quotation) {

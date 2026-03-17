@@ -219,6 +219,7 @@ export default function EditQuotationPage() {
       await api.put(`/quotations/${params.id}`, {
         ...formData,
         tax: calculateVat(),
+        status: asDraft ? 'draft' : 'sent',
         items: lineItems.map((item: LineItem) => ({
           ...item,
           total: item.quantity * item.unitPrice,
@@ -234,6 +235,11 @@ export default function EditQuotationPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const hasValidItems = items.some((i) => (i.description || '').trim() && Number(i.quantity) > 0 && Number(i.unitPrice) >= 0);
+    if (!hasValidItems) {
+      alert('Add at least one item with description, quantity, and price to save as quote');
+      return;
+    }
     submitQuotation(false);
   };
 
@@ -262,7 +268,7 @@ export default function EditQuotationPage() {
     <Layout>
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Edit Quotation{quotationNumber ? ` – ${quotationNumber}` : ''}
+          Edit Quote{quotationNumber ? ` – ${quotationNumber}` : ''}
         </h1>
 
         <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
@@ -434,7 +440,7 @@ export default function EditQuotationPage() {
             <button type="button" onClick={() => router.back()} className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">Cancel</button>
             <Link href={`/quotations/${params.id}`} className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">View</Link>
             <button type="button" onClick={handleSaveDraft} disabled={loading} className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">{loading ? 'Saving...' : 'Save as Draft'}</button>
-            <button type="submit" disabled={loading} className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50">{loading ? 'Saving...' : 'Save Changes'}</button>
+            <button type="submit" disabled={loading} className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50">{loading ? 'Saving...' : 'Save as Quote'}</button>
           </div>
         </form>
       </div>

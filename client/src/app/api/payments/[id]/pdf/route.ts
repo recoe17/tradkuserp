@@ -18,6 +18,7 @@ export async function GET(
         invoice: {
           include: {
             customer: true,
+            job: true,
           },
         },
       },

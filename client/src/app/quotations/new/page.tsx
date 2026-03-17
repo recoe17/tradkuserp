@@ -181,6 +181,7 @@ export default function NewQuotationPage() {
       await api.post('/quotations', {
         ...formData,
         tax: calculateVat(),
+        asDraft,
         items: lineItems.map((item: LineItem) => ({
           ...item,
           total: item.quantity * item.unitPrice,
@@ -196,6 +197,11 @@ export default function NewQuotationPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const hasValidItems = items.some((i) => (i.description || '').trim() && Number(i.quantity) > 0 && Number(i.unitPrice) >= 0);
+    if (!hasValidItems) {
+      alert('Add at least one item with description, quantity, and price to create a quote');
+      return;
+    }
     submitQuotation(false);
   };
 
@@ -213,7 +219,7 @@ export default function NewQuotationPage() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">New Quotation</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">New Quote</h1>
 
         <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-6">
@@ -557,7 +563,7 @@ export default function NewQuotationPage() {
               disabled={loading}
               className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Quotation'}
+              {loading ? 'Creating...' : 'Create Quote'}
             </button>
           </div>
         </form>

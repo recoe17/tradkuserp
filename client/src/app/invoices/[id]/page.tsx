@@ -68,6 +68,7 @@ export default function InvoiceViewPage() {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [paymentReference, setPaymentReference] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
 
   useEffect(() => {
     fetchInvoice();
@@ -136,10 +137,12 @@ export default function InvoiceViewPage() {
         amount: parseFloat(paymentAmount),
         method: paymentMethod,
         reference: paymentReference || undefined,
+        notes: paymentNotes || undefined,
       });
       setShowPaymentForm(false);
       setPaymentAmount('');
       setPaymentReference('');
+      setPaymentNotes('');
       fetchInvoice();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to record payment');
@@ -287,6 +290,16 @@ export default function InvoiceViewPage() {
                     placeholder="Transaction reference"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Description (what it’s for)</label>
+                <textarea
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
+                  placeholder="e.g. Deposit for installation, Payment for materials, etc."
+                  rows={2}
+                />
               </div>
               <div className="flex space-x-4">
                 <button

@@ -67,11 +67,13 @@ export async function PUT(
 
   try {
     const { id } = await params;
-    const { title, description, serviceType, status, priority, startDate, endDate, location, assignedTo, notes } = await request.json();
+    const body = await request.json();
+    const { title, description, serviceType, status, priority, startDate, endDate, location, assignedTo, notes, customerId } = body;
 
     const job = await prisma.job.update({
       where: { id },
       data: {
+        ...(customerId && { customerId }),
         title,
         description,
         serviceType,

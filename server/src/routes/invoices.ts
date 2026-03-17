@@ -6,18 +6,19 @@ import { generateInvoicePDF } from '../services/pdf';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Generate invoice number
+// Generate invoice number using atomic yearly counter
 async function generateInvoiceNumber(): Promise<string> {
   const year = new Date().getFullYear();
-  const count = await prisma.invoice.count({
-    where: {
-      createdAt: {
-        gte: new Date(`${year}-01-01`),
-        lt: new Date(`${year + 1}-01-01`)
-      }
-    }
+
+  const counter = await prisma.$transaction(async (tx) => {
+    return tx.invoiceCounter.upsert({
+      where: { year },
+      update: { value: { increment: 1 } },
+      create: { year, value: 1 }
+    });
   });
-  return `INV-${year}-${String(count + 1).padStart(4, '0')}`;
+
+  return `INV-${year}-${String(counter.value).padStart(4, '0')}`;
 }
 
 // Get all invoices

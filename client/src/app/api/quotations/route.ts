@@ -4,15 +4,18 @@ import { getAuthUser, unauthorizedResponse } from '@/lib/auth';
 
 async function generateQuotationNumber(): Promise<string> {
   const year = new Date().getFullYear();
-  const count = await prisma.quotation.count({
-    where: {
-      createdAt: {
-        gte: new Date(`${year}-01-01`),
-        lt: new Date(`${year + 1}-01-01`)
-      }
-    }
+  const prefix = `QUO-${year}-`;
+  const existing = await prisma.quotation.findMany({
+    where: { quotationNumber: { startsWith: prefix } },
+    select: { quotationNumber: true }
   });
-  return `QUO-${year}-${String(count + 1).padStart(4, '0')}`;
+  let maxNum = 0;
+  for (const q of existing) {
+    const numPart = q.quotationNumber.replace(prefix, '');
+    const n = parseInt(numPart, 10) || 0;
+    if (n > maxNum) maxNum = n;
+  }
+  return `${prefix}${String(maxNum + 1).padStart(4, '0')}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -45,36 +48,47 @@ export async function POST(request: NextRequest) {
   if (!user) return unauthorizedResponse();
 
   try {
-    const { customerId, jobId, validUntil, items, notes, terms, tax, discount, currency } = await request.json();
+    const { customerId, jobId, validUntil, items, notes, terms, tax, discount, currency, asDraft } = await request.json();
 
     const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = tax || 0;
     const discountAmount = discount || 0;
     const total = subtotal + taxAmount - discountAmount;
 
-    const quotationNumber = await generateQuotationNumber();
+    const createQuotation = async (quotationNumber: string) =>
+      prisma.quotation.create({
+        data: {
+          quotationNumber,
+          customerId,
+          jobId: jobId || null,
+          validUntil: validUntil ? new Date(validUntil) : null,
+          items,
+          notes,
+          terms,
+          subtotal,
+          tax: taxAmount,
+          discount: discountAmount,
+          total,
+          currency: ['USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'USD',
+          status: asDraft === false ? 'sent' : 'draft'
+        },
+        include: { customer: true, job: true }
+      });
 
-    const quotation = await prisma.quotation.create({
-      data: {
-        quotationNumber,
-        customerId,
-        jobId: jobId || null,
-        validUntil: validUntil ? new Date(validUntil) : null,
-        items,
-        notes,
-        terms,
-        subtotal,
-        tax: taxAmount,
-        discount: discountAmount,
-        total,
-        currency: ['USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'USD',
-        status: 'draft' // Always create as draft; only sent/accepted/rejected when explicitly updated
-      },
-      include: {
-        customer: true,
-        job: true
+    let quotation;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const quotationNumber = await generateQuotationNumber();
+      try {
+        quotation = await createQuotation(quotationNumber);
+        break;
+      } catch (e: any) {
+        if (e?.code === 'P2002' && e?.meta?.target?.includes?.('quotationNumber') && attempt < 2) {
+          continue; // retry on unique constraint
+        }
+        throw e;
       }
-    });
+    }
+    if (!quotation) throw new Error('Failed to create quotation');
 
     return NextResponse.json(quotation, { status: 201 });
   } catch (error: any) {

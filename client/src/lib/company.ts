@@ -1,7 +1,7 @@
 export const COMPANY = {
   name: 'MaxVolt Electrical (Pvt) Ltd',
   tagline: 'The best way to power up',
-  address: '5 Luton Ave, Belmont East Office 12, Harare',
+  address: '5 Luton Ave, Belmont East Office 12, Bulawayo',
   tin: '2001171770',
   website: 'www.maxvoltelectrical.co.zw',
   email: 'info@maxvoltelectrical.co.zw',

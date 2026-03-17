@@ -4,15 +4,16 @@ import { getAuthUser, unauthorizedResponse } from '@/lib/auth';
 
 async function generateInvoiceNumber(): Promise<string> {
   const year = new Date().getFullYear();
-  const count = await prisma.invoice.count({
-    where: {
-      createdAt: {
-        gte: new Date(`${year}-01-01`),
-        lt: new Date(`${year + 1}-01-01`)
-      }
-    }
+
+  const counter = await prisma.$transaction(async (tx) => {
+    return tx.invoiceCounter.upsert({
+      where: { year },
+      update: { value: { increment: 1 } },
+      create: { year, value: 1 }
+    });
   });
-  return `INV-${year}-${String(count + 1).padStart(4, '0')}`;
+
+  return `INV-${year}-${String(counter.value).padStart(4, '0')}`;
 }
 
 export async function POST(
@@ -37,25 +38,10 @@ export async function POST(
     }
 
     const { dueDate } = await request.json();
-    const invoiceNumber = await generateInvoiceNumber();
 
-    const invoice = await prisma.invoice.create({
-      data: {
-        invoiceNumber,
-        quotationId: quotation.id,
-        customerId: quotation.customerId,
-        jobId: quotation.jobId,
-        dueDate: dueDate ? new Date(dueDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        items: quotation.items as any,
-        notes: quotation.notes,
-        terms: quotation.terms,
-        subtotal: quotation.subtotal,
-        tax: quotation.tax,
-        discount: quotation.discount,
-        total: quotation.total,
-        balance: quotation.total,
-        currency: ['USD', 'ZIG', 'ZAR'].includes(quotation.currency) ? quotation.currency : 'USD'
-      },
+    // If an invoice already exists for this quotation, return it instead of creating a duplicate
+    const existingInvoice = await prisma.invoice.findFirst({
+      where: { quotationId: quotation.id },
       include: {
         customer: true,
         job: true,
@@ -63,7 +49,52 @@ export async function POST(
       }
     });
 
-    return NextResponse.json(invoice, { status: 201 });
+    if (existingInvoice) {
+      return NextResponse.json(existingInvoice, { status: 200 });
+    }
+
+    const invoiceNumber = await generateInvoiceNumber();
+
+    try {
+      const invoice = await prisma.invoice.create({
+        data: {
+          invoiceNumber,
+          quotationId: quotation.id,
+          customerId: quotation.customerId,
+          jobId: quotation.jobId,
+          dueDate: dueDate
+            ? new Date(dueDate)
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          items: quotation.items as any,
+          notes: quotation.notes,
+          terms: quotation.terms,
+          subtotal: quotation.subtotal,
+          tax: quotation.tax,
+          discount: quotation.discount,
+          total: quotation.total,
+          balance: quotation.total,
+          currency: ['USD', 'ZIG', 'ZAR'].includes(quotation.currency)
+            ? quotation.currency
+            : 'USD'
+        },
+        include: {
+          customer: true,
+          job: true,
+          quotation: true
+        }
+      });
+
+      return NextResponse.json(invoice, { status: 201 });
+    } catch (error: any) {
+      // Handle unique constraint on invoiceNumber gracefully
+      if (error.code === 'P2002' && error.meta?.target?.includes('invoiceNumber')) {
+        return NextResponse.json(
+          { message: 'An invoice was just created with this number. Please try again.' },
+          { status: 409 }
+        );
+      }
+      throw error;
+    }
   } catch (error: any) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
