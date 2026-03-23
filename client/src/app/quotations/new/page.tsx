@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { useApi } from '@/lib/clerk-api';
 import { formatAmount, getCurrencySymbol } from '@/lib/currency';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Plus, Trash2, Search, Package } from 'lucide-react';
 
 interface Customer {
   id: string;
@@ -295,15 +296,27 @@ export default function NewQuotationPage() {
 
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Items</h3>
-              <button
-                type="button"
-                onClick={addItem}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Item
-              </button>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">Items</h3>
+                <p className="text-sm text-gray-500 mt-0.5">Type in the Items column to search and pick from your catalog, or add new items on Products & Services.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/items"
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <Package className="h-4 w-4 mr-1" />
+                  Manage Items
+                </Link>
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Item
+                </button>
+              </div>
             </div>
 
             <div className="overflow-x-auto overflow-y-visible">

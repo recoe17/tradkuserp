@@ -57,6 +57,7 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Customers', href: '/customers', icon: Users },
     { name: 'Jobs', href: '/jobs', icon: Briefcase },
+    { name: 'Products & Services', href: '/items', icon: Package },
     { name: 'Quotations', href: '/quotations', icon: FileText },
     { name: 'Invoices', href: '/invoices', icon: Receipt },
     { name: 'Receipts', href: '/receipts', icon: FileCheck },
