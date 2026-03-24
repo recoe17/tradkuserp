@@ -64,10 +64,10 @@ export async function POST(
           <div style="padding: 20px;">
             <h2>Dear ${quotation.customer.name},</h2>
             <p>Thank you for your interest in our services. Please find attached quotation <strong>${quotation.quotationNumber}</strong>.</p>
-            <p><strong>Total Amount:</strong> ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}</p>
+            <p><strong>Total Amount:</strong> ${formatAmount(Number(quotation.total), quotation.currency || 'BWP')}</p>
             ${quotation.validUntil ? `<p><strong>Valid Until:</strong> ${new Date(quotation.validUntil).toLocaleDateString()}</p>` : ''}
             <p>If you have any questions, please don't hesitate to contact us.</p>
-            <p>Best regards,<br><strong>Tradkuserp</strong><br>Bulawayo, Zimbabwe</p>
+            <p>Best regards,<br><strong>Tradkuserp</strong><br>Plot No. 1214 Molosiwa Road, G West Industrial, Gaborone. P. O. Box 202895, Gaborone, Botswana</p>
           </div>
           <div style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280;">
             Solar Power Systems | Solar Pumps | Solar Geysers | House Wiring | Security Systems

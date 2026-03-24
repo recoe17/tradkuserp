@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         discount: discountAmount,
         total,
         balance: total,
-        currency: ['USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'USD'
+        currency: ['BWP', 'USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'BWP'
       },
       include: {
         customer: true,

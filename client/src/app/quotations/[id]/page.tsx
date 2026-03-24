@@ -310,7 +310,7 @@ export default function QuotationViewPage() {
               <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Convert Quotation to Invoice</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  This will create a new invoice from quotation <strong>{quotation.quotationNumber}</strong> for <strong>{formatAmount(Number(quotation.total), quotation.currency || 'USD')}</strong>.
+                  This will create a new invoice from quotation <strong>{quotation.quotationNumber}</strong> for <strong>{formatAmount(Number(quotation.total), quotation.currency || 'BWP')}</strong>.
                 </p>
                 <form onSubmit={handleConvertToInvoice}>
                   <div className="mb-4">
@@ -443,10 +443,10 @@ export default function QuotationViewPage() {
                         <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">{item.quantity}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                          {formatAmount(Number(item.unitPrice), quotation.currency || 'USD')}
+                          {formatAmount(Number(item.unitPrice), quotation.currency || 'BWP')}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                          {formatAmount(item.quantity * item.unitPrice, quotation.currency || 'USD')}
+                          {formatAmount(item.quantity * item.unitPrice, quotation.currency || 'BWP')}
                         </td>
                       </tr>
                     ))}
@@ -459,23 +459,23 @@ export default function QuotationViewPage() {
               <div className="w-64">
                 <div className="flex justify-between py-2">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="text-gray-900">{formatAmount(Number(quotation.subtotal), quotation.currency || 'USD')}</span>
+                  <span className="text-gray-900">{formatAmount(Number(quotation.subtotal), quotation.currency || 'BWP')}</span>
                 </div>
                 {Number(quotation.tax) > 0 && (
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">VAT (15.5%):</span>
-                    <span className="text-gray-900">{formatAmount(Number(quotation.tax), quotation.currency || 'USD')}</span>
+                    <span className="text-gray-900">{formatAmount(Number(quotation.tax), quotation.currency || 'BWP')}</span>
                   </div>
                 )}
                 {Number(quotation.discount) > 0 && (
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">Discount:</span>
-                    <span className="text-gray-900">-{formatAmount(Number(quotation.discount), quotation.currency || 'USD')}</span>
+                    <span className="text-gray-900">-{formatAmount(Number(quotation.discount), quotation.currency || 'BWP')}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-2 border-t-2 border-red-600 font-bold">
                   <span className="text-gray-900">Total:</span>
-                  <span className="text-red-600 text-lg">{formatAmount(Number(quotation.total), quotation.currency || 'USD')}</span>
+                  <span className="text-red-600 text-lg">{formatAmount(Number(quotation.total), quotation.currency || 'BWP')}</span>
                 </div>
               </div>
             </div>

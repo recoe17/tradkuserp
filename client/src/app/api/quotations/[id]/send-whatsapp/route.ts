@@ -38,7 +38,7 @@ export async function POST(
         `Hello ${quotation.customer.name},\n\n` +
         `Thank you for your interest in Tradkuserp.\n\n` +
         `Here are the details for Quotation ${quotation.quotationNumber}:\n` +
-        `Total Amount: ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}\n` +
+        `Total Amount: ${formatAmount(Number(quotation.total), quotation.currency || 'BWP')}\n` +
         `${quotation.validUntil ? `Valid Until: ${new Date(quotation.validUntil).toLocaleDateString()}\n` : ''}` +
         `\nPlease let us know if you have any questions.\n\n` +
         `Best regards,\nTradkuserp`
@@ -59,7 +59,7 @@ export async function POST(
       `Hello ${quotation.customer.name},\n\n` +
       `Thank you for your interest in Tradkuserp.\n\n` +
       `Quotation: ${quotation.quotationNumber}\n` +
-      `Total: ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}\n` +
+      `Total: ${formatAmount(Number(quotation.total), quotation.currency || 'BWP')}\n` +
       `${quotation.validUntil ? `Valid Until: ${new Date(quotation.validUntil).toLocaleDateString()}\n` : ''}` +
       `\nPlease contact us for more details.\n\n` +
       `Tradkuserp`;

@@ -261,7 +261,7 @@ export default function InvoiceViewPage() {
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
-                    placeholder={`Max: ${formatAmount(Number(invoice.balance), invoice.currency || 'USD')}`}
+                    placeholder={`Max: ${formatAmount(Number(invoice.balance), invoice.currency || 'BWP')}`}
                     max={invoice.balance}
                     required
                   />
@@ -413,10 +413,10 @@ export default function InvoiceViewPage() {
                         <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">{item.quantity}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                          {formatAmount(Number(item.unitPrice), invoice.currency || 'USD')}
+                          {formatAmount(Number(item.unitPrice), invoice.currency || 'BWP')}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 text-right">
-                          {formatAmount(item.quantity * item.unitPrice, invoice.currency || 'USD')}
+                          {formatAmount(item.quantity * item.unitPrice, invoice.currency || 'BWP')}
                         </td>
                       </tr>
                     ))}
@@ -429,32 +429,32 @@ export default function InvoiceViewPage() {
               <div className="w-64">
                 <div className="flex justify-between py-2">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="text-gray-900">{formatAmount(Number(invoice.subtotal), invoice.currency || 'USD')}</span>
+                  <span className="text-gray-900">{formatAmount(Number(invoice.subtotal), invoice.currency || 'BWP')}</span>
                 </div>
                 {Number(invoice.tax) > 0 && (
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">VAT (15.5%):</span>
-                    <span className="text-gray-900">{formatAmount(Number(invoice.tax), invoice.currency || 'USD')}</span>
+                    <span className="text-gray-900">{formatAmount(Number(invoice.tax), invoice.currency || 'BWP')}</span>
                   </div>
                 )}
                 {Number(invoice.discount) > 0 && (
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">Discount:</span>
-                    <span className="text-gray-900">-{formatAmount(Number(invoice.discount), invoice.currency || 'USD')}</span>
+                    <span className="text-gray-900">-{formatAmount(Number(invoice.discount), invoice.currency || 'BWP')}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-2 border-t-2 border-red-600 font-bold">
                   <span className="text-gray-900">Total:</span>
-                  <span className="text-red-600 text-lg">{formatAmount(Number(invoice.total), invoice.currency || 'USD')}</span>
+                  <span className="text-red-600 text-lg">{formatAmount(Number(invoice.total), invoice.currency || 'BWP')}</span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-gray-600">Paid:</span>
-                  <span className="text-green-600">{formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD')}</span>
+                  <span className="text-green-600">{formatAmount(Number(invoice.paidAmount), invoice.currency || 'BWP')}</span>
                 </div>
                 <div className="flex justify-between py-2 font-bold text-lg">
                   <span className="text-gray-900">Balance:</span>
                   <span className={invoice.balance > 0 ? 'text-red-600' : 'text-green-600'}>
-                    {formatAmount(Number(invoice.balance), invoice.currency || 'USD')}
+                    {formatAmount(Number(invoice.balance), invoice.currency || 'BWP')}
                   </span>
                 </div>
               </div>
@@ -497,7 +497,7 @@ export default function InvoiceViewPage() {
                             {payment.reference || '-'}
                           </td>
                           <td className="px-6 py-4 text-sm text-green-600 text-right font-medium">
-                            {formatAmount(Number(payment.amount), invoice.currency || 'USD')}
+                            {formatAmount(Number(payment.amount), invoice.currency || 'BWP')}
                           </td>
                           <td className="px-6 py-4 text-right">
                             <button

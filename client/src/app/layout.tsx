@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Tradkuserp - Electrical Company Management",
-  description: "Solar Power Systems, Solar Pumps, Solar Geysers, House Wiring, Security Systems, Lighting Solutions - Bulawayo, Zimbabwe",
+  description: "Solar Power Systems, Solar Pumps, Solar Geysers, House Wiring, Security Systems, Lighting Solutions - Gaborone, Botswana",
 };
 
 export default function RootLayout({

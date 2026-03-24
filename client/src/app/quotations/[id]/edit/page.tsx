@@ -65,7 +65,7 @@ export default function EditQuotationPage() {
     customerId: '',
     jobId: '',
     validUntil: '',
-    currency: 'USD' as 'USD' | 'ZIG' | 'ZAR',
+    currency: 'BWP' as 'BWP' | 'USD' | 'ZIG' | 'ZAR',
     notes: '',
     terms: '',
     discount: 0,
@@ -97,7 +97,7 @@ export default function EditQuotationPage() {
         customerId: q.customerId || '',
         jobId: q.jobId || '',
         validUntil: q.validUntil ? new Date(q.validUntil).toISOString().split('T')[0] : '',
-        currency: (['USD', 'ZIG', 'ZAR'].includes(q.currency) ? q.currency : 'USD') as 'USD' | 'ZIG' | 'ZAR',
+        currency: (['BWP', 'USD', 'ZIG', 'ZAR'].includes(q.currency) ? q.currency : 'BWP') as 'BWP' | 'USD' | 'ZIG' | 'ZAR',
         notes: q.notes || '',
         terms: q.terms || '',
         discount: Number(q.discount) || 0,
@@ -309,9 +309,10 @@ export default function EditQuotationPage() {
               <select
                 id="currency"
                 value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'USD' | 'ZIG' | 'ZAR' })}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'BWP' | 'USD' | 'ZIG' | 'ZAR' })}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               >
+                <option value="BWP">BWP (P)</option>
                 <option value="USD">USD ($)</option>
                 <option value="ZIG">ZIG (Z$)</option>
                 <option value="ZAR">ZAR (R)</option>

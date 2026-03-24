@@ -14,14 +14,14 @@ export const COMPANY = {
       name: 'Central African Building Society (CABS)',
       accountName: 'Tradkuserp Pvt Ltd',
       accountNumber: '1130496341',
-      branch: 'CABS Center 98 Jason Moyo Street Bulawayo',
+      branch: 'Gaborone, Botswana',
     },
     {
       title: 'ZIG',
       name: 'Central African Building Society (CABS) (ZIG)',
       accountName: 'Tradkuserp',
       accountNumber: '1125131268',
-      branch: 'CABS Center 98 Jason Moyo Street Bulawayo',
+      branch: 'Gaborone, Botswana',
     },
   ],
 };

@@ -63,11 +63,11 @@ export async function POST(
           <div style="padding: 20px;">
             <h2>Dear ${invoice.customer.name},</h2>
             <p>Please find attached invoice <strong>${invoice.invoiceNumber}</strong>.</p>
-            <p><strong>Total Amount:</strong> ${formatAmount(Number(invoice.total), invoice.currency || 'USD')}</p>
+            <p><strong>Total Amount:</strong> ${formatAmount(Number(invoice.total), invoice.currency || 'BWP')}</p>
             <p><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString()}</p>
-            ${Number(invoice.balance) > 0 ? `<p><strong>Balance Due:</strong> ${formatAmount(Number(invoice.balance), invoice.currency || 'USD')}</p>` : ''}
+            ${Number(invoice.balance) > 0 ? `<p><strong>Balance Due:</strong> ${formatAmount(Number(invoice.balance), invoice.currency || 'BWP')}</p>` : ''}
             <p>Please make payment by the due date.</p>
-            <p>Best regards,<br><strong>Tradkuserp</strong><br>Bulawayo, Zimbabwe</p>
+            <p>Best regards,<br><strong>Tradkuserp</strong><br>Plot No. 1214 Molosiwa Road, G West Industrial, Gaborone. P. O. Box 202895, Gaborone, Botswana</p>
           </div>
           <div style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280;">
             Solar Power Systems | Solar Pumps | Solar Geysers | House Wiring | Security Systems

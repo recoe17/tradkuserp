@@ -163,8 +163,8 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica');
         doc.text(truncateText(String(item.description || ''), 60), 60, itemY, { width: 280, ...NO_BREAK });
         doc.text(String(item.quantity || 0), 350, itemY, NO_BREAK);
-        doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'USD'), 400, itemY, NO_BREAK);
-        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'USD'), 480, itemY, NO_BREAK);
+        doc.text(formatAmount(Number(item.unitPrice || 0), quotation.currency || 'BWP'), 400, itemY, NO_BREAK);
+        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), quotation.currency || 'BWP'), 480, itemY, NO_BREAK);
         itemY += rowHeight;
         rowIndex++;
       });
@@ -177,20 +177,20 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       const drawSummary = (startY: number) => {
         doc.rect(totalsX - 10, startY - 5, 180, 80).fillColor('#FEF2F2').fill();
         doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica').text('Subtotal:', totalsX, startY, NO_BREAK);
-        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.subtotal), quotation.currency || 'USD'), 480, startY, NO_BREAK);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.subtotal), quotation.currency || 'BWP'), 480, startY, NO_BREAK);
         let ly = startY + 14;
         if (Number(quotation.tax) > 0) {
           doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, ly, NO_BREAK);
-          doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'USD'), 480, ly, NO_BREAK);
+          doc.fillColor(DARK_GRAY).text(formatAmount(Number(quotation.tax), quotation.currency || 'BWP'), 480, ly, NO_BREAK);
           ly += 14;
         }
         if (Number(quotation.discount) > 0) {
           doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, ly, NO_BREAK);
-          doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'USD')}`, 480, ly, NO_BREAK);
+          doc.fillColor('#16A34A').text(`-${formatAmount(Number(quotation.discount), quotation.currency || 'BWP')}`, 480, ly, NO_BREAK);
         }
         doc.moveTo(totalsX, startY + 50).lineTo(550, startY + 50).strokeColor(RED_COLOR).lineWidth(1).stroke();
         doc.fillColor(RED_COLOR).fontSize(11).font('Helvetica-Bold').text('TOTAL:', totalsX, startY + 60, NO_BREAK);
-        doc.fillColor(RED_COLOR).text(formatAmount(Number(quotation.total), quotation.currency || 'USD'), 470, startY + 60, NO_BREAK);
+        doc.fillColor(RED_COLOR).text(formatAmount(Number(quotation.total), quotation.currency || 'BWP'), 470, startY + 60, NO_BREAK);
         let cY = startY + 95;
         if (quotation.notes) {
           doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Notes:', 50, cY, NO_BREAK);
@@ -360,8 +360,8 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica');
         doc.text(truncateText(String(item.description || ''), 120), 60, invItemY, { width: 280, height: 18, ellipsis: true });
         doc.text(String(item.quantity || 0), 350, invItemY);
-        doc.text(formatAmount(Number(item.unitPrice || 0), invoice.currency || 'USD'), 400, invItemY);
-        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), invoice.currency || 'USD'), 480, invItemY);
+        doc.text(formatAmount(Number(item.unitPrice || 0), invoice.currency || 'BWP'), 400, invItemY);
+        doc.text(formatAmount(Number(item.quantity * item.unitPrice || 0), invoice.currency || 'BWP'), 480, invItemY);
         invItemY += 20;
       });
 
@@ -381,18 +381,18 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
         .text('Subtotal:', totalsX, invTotalsTopY);
       doc.fillColor(DARK_GRAY)
-        .text(formatAmount(Number(invoice.subtotal), invoice.currency || 'USD'), 480, invTotalsTopY);
+        .text(formatAmount(Number(invoice.subtotal), invoice.currency || 'BWP'), 480, invTotalsTopY);
       
       let invTotalsLineY = invTotalsTopY + 14;
       if (Number(invoice.tax) > 0) {
         doc.fillColor(LIGHT_GRAY).text('VAT (15.5%):', totalsX, invTotalsLineY);
-        doc.fillColor(DARK_GRAY).text(formatAmount(Number(invoice.tax), invoice.currency || 'USD'), 480, invTotalsLineY);
+        doc.fillColor(DARK_GRAY).text(formatAmount(Number(invoice.tax), invoice.currency || 'BWP'), 480, invTotalsLineY);
         invTotalsLineY += 14;
       }
       
       if (Number(invoice.discount) > 0) {
         doc.fillColor(LIGHT_GRAY).text('Discount:', totalsX, invTotalsLineY);
-        doc.fillColor('#16A34A').text(`-${formatAmount(Number(invoice.discount), invoice.currency || 'USD')}`, 480, invTotalsLineY);
+        doc.fillColor('#16A34A').text(`-${formatAmount(Number(invoice.discount), invoice.currency || 'BWP')}`, 480, invTotalsLineY);
         invTotalsLineY += 14;
       }
       
@@ -400,14 +400,14 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       
       doc.fillColor(DARK_GRAY).fontSize(F.body).font('Helvetica-Bold')
         .text('Total:', totalsX, invTotalsTopY + 70);
-      doc.text(formatAmount(Number(invoice.total), invoice.currency || 'USD'), 480, invTotalsTopY + 70);
+      doc.text(formatAmount(Number(invoice.total), invoice.currency || 'BWP'), 480, invTotalsTopY + 70);
 
       doc.fillColor('#16A34A').text('Paid:', totalsX, invTotalsTopY + 84);
-      doc.text(formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD'), 480, invTotalsTopY + 84);
+      doc.text(formatAmount(Number(invoice.paidAmount), invoice.currency || 'BWP'), 480, invTotalsTopY + 84);
 
       doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
         .text('Balance Due:', totalsX, invTotalsTopY + 98);
-      doc.text(formatAmount(Number(invoice.balance), invoice.currency || 'USD'), 470, invTotalsTopY + 98);
+      doc.text(formatAmount(Number(invoice.balance), invoice.currency || 'BWP'), 470, invTotalsTopY + 98);
 
       // Payment History - fixed Y, no flow (max 5 payments shown)
       const payHistY = 580;
@@ -415,7 +415,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Payment History:', 50, payHistY, NO_BREAK);
         invoice.payments.slice(0, 5).forEach((payment: any, i: number) => {
           doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-            .text(`${new Date(payment.paidAt).toLocaleDateString()} - ${formatAmount(Number(payment.amount), invoice.currency || 'USD')} (${payment.method})`, 50, payHistY + 16 + i * 14, { width: 500, ...NO_BREAK });
+            .text(`${new Date(payment.paidAt).toLocaleDateString()} - ${formatAmount(Number(payment.amount), invoice.currency || 'BWP')} (${payment.method})`, 50, payHistY + 16 + i * 14, { width: 500, ...NO_BREAK });
         });
       }
 
@@ -484,7 +484,7 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
 
       const invoice = payment.invoice;
       const customer = invoice?.customer || { name: '', company: '', address: '', email: '', phone: '' };
-      const currency = invoice?.currency || 'USD';
+      const currency = invoice?.currency || 'BWP';
 
       const itemPurpose = (() => {
         const items = Array.isArray(invoice?.items) ? invoice.items : [];

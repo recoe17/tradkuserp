@@ -65,7 +65,7 @@ model Quotation {
   customer      Customer @relation(fields: [customerId], references: [id])
   jobId         String?
   job           Job?     @relation(fields: [jobId], references: [id])
-  currency      String   @default("USD")
+  currency      String   @default("BWP")
   status        String   @default("draft")
   validUntil    DateTime?
   subtotal      Decimal  @default(0)
@@ -91,7 +91,7 @@ model Invoice {
   customer      Customer @relation(fields: [customerId], references: [id])
   jobId         String?
   job           Job?     @relation(fields: [jobId], references: [id])
-  currency      String   @default("USD")
+  currency      String   @default("BWP")
   status        String   @default("draft")
   issueDate     DateTime @default(now())
   dueDate       DateTime

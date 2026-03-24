@@ -74,7 +74,7 @@ export async function PUT(
     };
     if (customerId) updateData.customerId = customerId;
     if (jobId !== undefined) updateData.jobId = jobId || null;
-    if (currency && ['USD', 'ZIG', 'ZAR'].includes(currency)) updateData.currency = currency;
+    if (currency && ['BWP', 'USD', 'ZIG', 'ZAR'].includes(currency)) updateData.currency = currency;
 
     const quotation = await prisma.quotation.update({
       where: { id },

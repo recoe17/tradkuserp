@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           tax: taxAmount,
           discount: discountAmount,
           total,
-          currency: ['USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'USD',
+          currency: ['BWP', 'USD', 'ZIG', 'ZAR'].includes(currency) ? currency : 'BWP',
           status: asDraft === false ? 'sent' : 'draft'
         },
         include: { customer: true, job: true }

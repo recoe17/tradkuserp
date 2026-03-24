@@ -147,16 +147,16 @@ export default function InvoicesPage() {
                       </p>
                       <div className="mt-2 flex items-center space-x-4">
                         <p className="text-sm font-semibold text-gray-900">
-                          Total: {formatAmount(Number(invoice.total), invoice.currency || 'USD')}
+                          Total: {formatAmount(Number(invoice.total), invoice.currency || 'BWP')}
                         </p>
                         {Number(invoice.paidAmount) > 0 && (
                           <p className="text-sm text-green-600">
-                            Paid: {formatAmount(Number(invoice.paidAmount), invoice.currency || 'USD')}
+                            Paid: {formatAmount(Number(invoice.paidAmount), invoice.currency || 'BWP')}
                           </p>
                         )}
                         {Number(invoice.balance) > 0 && (
                           <p className="text-sm text-red-600">
-                            Balance: {formatAmount(Number(invoice.balance), invoice.currency || 'USD')}
+                            Balance: {formatAmount(Number(invoice.balance), invoice.currency || 'BWP')}
                           </p>
                         )}
                       </div>

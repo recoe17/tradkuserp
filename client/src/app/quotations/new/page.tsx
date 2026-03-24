@@ -45,7 +45,7 @@ export default function NewQuotationPage() {
     customerId: '',
     jobId: '',
     validUntil: '',
-    currency: 'USD' as 'USD' | 'ZIG' | 'ZAR',
+    currency: 'BWP' as 'BWP' | 'USD' | 'ZIG' | 'ZAR',
     notes: '',
     terms: '',
     discount: 0,
@@ -271,9 +271,10 @@ export default function NewQuotationPage() {
               <select
                 id="currency"
                 value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'USD' | 'ZIG' | 'ZAR' })}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value as 'BWP' | 'USD' | 'ZIG' | 'ZAR' })}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500"
               >
+                <option value="BWP">BWP (P)</option>
                 <option value="USD">USD ($)</option>
                 <option value="ZIG">ZIG (Z$)</option>
                 <option value="ZAR">ZAR (R)</option>
