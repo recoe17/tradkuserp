@@ -17,7 +17,7 @@ function truncateText(text: string, maxLen: number): string {
 
 async function fetchLogoBuffer(): Promise<Buffer | null> {
   try {
-    const logoUrl = 'https://tradkuserp.vercel.app/logo.png';
+    const logoUrl = 'https://tradkuserp.vercel.app/tradkus-logo.png';
     console.log('Fetching logo from:', logoUrl);
     const response = await fetch(logoUrl, {
       headers: { 'Accept': 'image/*' },

@@ -2,7 +2,7 @@ const sharp = require('sharp');
 const path = require('path');
 
 async function generateFavicon() {
-  const logoPath = path.join(__dirname, '../public/logo.png');
+  const logoPath = path.join(__dirname, '../public/tradkus-logo.png');
   const appDir = path.join(__dirname, '../src/app');
 
   const metadata = await sharp(logoPath).metadata();
