@@ -128,7 +128,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       const pageHeight = 842;
       const footerHeight = 40;
       const banksToShow = COMPANY.banks;
-      const bankBoxHeightCalc = banksToShow.length * 50 + 20;
+      const bankBoxHeightCalc = banksToShow.length * 70 + 95; // bank details + undersigned
       const bankYStart = pageHeight - footerHeight - bankBoxHeightCalc - 15;
       const itemsBottomLimit = 700;
 
@@ -211,17 +211,29 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         drawSummary(totalsTopY);
       }
 
-      // Bank details fixed at bottom
+      // Bank details + Undersigned fixed at bottom
+      const sig = COMPANY.signature;
       doc.rect(50, bankYStart, doc.page.width - 100, bankBoxHeightCalc).strokeColor('#E5E7EB').lineWidth(1).stroke();
       let bankY = bankYStart + 12;
       banksToShow.forEach((bank: any) => {
         doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
-          .text(`Bank Details (${bank.title})`, 60, bankY, NO_BREAK);
+          .text('Bank Details', 60, bankY, NO_BREAK);
         doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
-          .text(`Bank: ${bank.name}`, 60, bankY + 12, { width: 400, ...NO_BREAK })
-          .text(`Acc: ${bank.accountNumber}`, 60, bankY + 24, { width: 400, ...NO_BREAK });
-        bankY += 50;
+          .text(`Bank Name: ${bank.name}`, 60, bankY + 12, { width: 400, ...NO_BREAK })
+          .text(`Branch Name: ${bank.branch}`, 60, bankY + 24, { width: 400, ...NO_BREAK });
+        if (bank.swiftCode) doc.text(`Swift Code: ${bank.swiftCode}`, 60, bankY + 36, { width: 400, ...NO_BREAK });
+        doc.text(`Account Number: ${bank.accountNumber}`, 60, bank.swiftCode ? bankY + 48 : bankY + 36, { width: 400, ...NO_BREAK });
+        bankY += (bank.swiftCode ? 70 : 58);
       });
+      doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold')
+        .text('Undersigned', 60, bankY + 5, NO_BREAK);
+      doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
+        .text(new Date(quotation.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), 60, bankY + 18, NO_BREAK)
+        .text(`Company Name: ${COMPANY.name}`, 60, bankY + 30, NO_BREAK)
+        .text(`Department: ${sig.department}`, 60, bankY + 42, NO_BREAK)
+        .text(sig.technicalEmail, 60, bankY + 54, NO_BREAK)
+        .text(sig.email, 60, bankY + 66, NO_BREAK)
+        .text(sig.phone, 60, bankY + 78, NO_BREAK);
 
       // Footer - fixed at very bottom of page
       doc.rect(0, pageHeight - footerHeight, doc.page.width, footerHeight).fill(RED_COLOR);
@@ -432,6 +444,24 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
         doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
           .text(truncateText(invoice.terms, 1000), 50, invTermsY + 14, { width: 500, height: 70 });
       }
+
+      // Bank details + Undersigned (above footer at 802)
+      const invBankY = 675;
+      const invBank = COMPANY.banks[0];
+      const invSig = COMPANY.signature;
+      const invBankBoxH = 115;
+      doc.rect(50, invBankY - 4, doc.page.width - 100, invBankBoxH).strokeColor('#E5E7EB').lineWidth(1).stroke();
+      if (invBank) {
+        doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Bank Details', 50, invBankY, NO_BREAK);
+        doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
+          .text(`Bank Name: ${invBank.name} | Branch: ${invBank.branch}`, 50, invBankY + 14, { width: 500, ...NO_BREAK });
+        doc.text(`Swift Code: ${invBank.swiftCode || '-'} | Account: ${invBank.accountNumber}`, 50, invBankY + 28, { width: 500, ...NO_BREAK });
+      }
+      doc.fillColor(RED_COLOR).fontSize(F.body).font('Helvetica-Bold').text('Undersigned', 50, invBankY + 48, NO_BREAK);
+      doc.fillColor(DARK_GRAY).fontSize(F.small).font('Helvetica')
+        .text(new Date(invoice.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), 50, invBankY + 62, NO_BREAK)
+        .text(`Company Name: ${COMPANY.name} | Department: ${invSig.department}`, 50, invBankY + 76, NO_BREAK)
+        .text(`${invSig.technicalEmail} | ${invSig.email} | ${invSig.phone}`, 50, invBankY + 90, NO_BREAK);
 
       // Footer
       const invPageH = 842;

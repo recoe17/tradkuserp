@@ -494,16 +494,27 @@ export default function QuotationViewPage() {
               </div>
             )}
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-8 space-y-6">
+              {/* Bank Details */}
               {COMPANY.banks.map((bank) => (
                 <div key={bank.title} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                  <h4 className="text-sm font-medium text-red-600 mb-3">Bank Details ({bank.title})</h4>
-                  <p className="text-sm text-gray-900"><span className="font-medium">Bank:</span> {bank.name}</p>
-                  <p className="text-sm text-gray-900"><span className="font-medium">Account Name:</span> {bank.accountName}</p>
+                  <h4 className="text-sm font-medium text-red-600 mb-3">Bank Details</h4>
+                  <p className="text-sm text-gray-900"><span className="font-medium">Bank Name:</span> {bank.name}</p>
+                  <p className="text-sm text-gray-900"><span className="font-medium">Branch Name:</span> {bank.branch}</p>
+                  {bank.swiftCode && <p className="text-sm text-gray-900"><span className="font-medium">Swift Code:</span> {bank.swiftCode}</p>}
                   <p className="text-sm text-gray-900"><span className="font-medium">Account Number:</span> {bank.accountNumber}</p>
-                  <p className="text-sm text-gray-900"><span className="font-medium">Branch:</span> {bank.branch}</p>
                 </div>
               ))}
+
+              {/* Undersigned */}
+              <div className="p-4 border-t border-gray-200 pt-6">
+                <p className="text-sm text-gray-600">{format(new Date(quotation.createdAt), 'MMMM d, yyyy')}</p>
+                <p className="text-sm text-gray-900 mt-2"><span className="font-medium">Company Name:</span> {COMPANY.name}</p>
+                <p className="text-sm text-gray-900"><span className="font-medium">Department:</span> {COMPANY.signature.department}</p>
+                <p className="text-sm text-gray-600 mt-3">{COMPANY.signature.technicalEmail}</p>
+                <p className="text-sm text-gray-600">{COMPANY.signature.email}</p>
+                <p className="text-sm text-gray-600">{COMPANY.signature.phone}</p>
+              </div>
             </div>
           </div>
         </div>
