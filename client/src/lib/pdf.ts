@@ -54,7 +54,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       
       // Logo and Company Header - no moveDown to avoid cursor/flow
       if (logoBuffer) {
-        doc.image(logoBuffer, 50, 20, { width: 120, height: 40 });
+        doc.image(logoBuffer, 50, 20, { width: 100, height: 33 });
       } else {
         doc.fillColor(RED_COLOR).fontSize(18).font('Helvetica-Bold')
           .text('TRADKUSERP', 50, 25, NO_BREAK);
@@ -255,7 +255,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       
       // Logo and Company Header
       if (logoBuffer) {
-        doc.image(logoBuffer, 50, 20, { width: 150 });
+        doc.image(logoBuffer, 50, 20, { width: 120 });
         doc.moveDown(4);
       } else {
         doc.moveDown();
@@ -464,7 +464,7 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       doc.rect(0, 0, doc.page.width, 8).fill(RED_COLOR);
 
       if (logoBuffer) {
-        doc.image(logoBuffer, 50, 20, { width: 150 });
+        doc.image(logoBuffer, 50, 20, { width: 120 });
         doc.moveDown(4);
       } else {
         doc.moveDown();
