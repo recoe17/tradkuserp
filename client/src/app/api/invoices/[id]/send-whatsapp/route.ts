@@ -34,12 +34,12 @@ export async function POST(
       const phone = invoice.customer.phone.replace(/[^0-9]/g, '');
       const message = encodeURIComponent(
         `Hello ${invoice.customer.name},\n\n` +
-        `This is a reminder for Invoice ${invoice.invoiceNumber} from MaxVolt Electrical.\n\n` +
+        `This is a reminder for Invoice ${invoice.invoiceNumber} from Tradkuserp.\n\n` +
         `Total Amount: ${formatAmount(Number(invoice.total), invoice.currency || 'USD')}\n` +
         `Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}\n` +
         `Balance Due: ${formatAmount(Number(invoice.balance), invoice.currency || 'USD')}\n` +
         `\nPlease make payment at your earliest convenience.\n\n` +
-        `Best regards,\nMaxVolt Electrical (Pvt) Ltd`
+        `Best regards,\nTradkuserp`
       );
       
       return NextResponse.json({ 
@@ -58,7 +58,7 @@ export async function POST(
       `Total: ${formatAmount(Number(invoice.total), invoice.currency || 'USD')}\n` +
       `Due: ${new Date(invoice.dueDate).toLocaleDateString()}\n` +
       `Balance: ${formatAmount(Number(invoice.balance), invoice.currency || 'USD')}\n\n` +
-      `MaxVolt Electrical (Pvt) Ltd`;
+      `Tradkuserp`;
 
     await client.messages.create({
       body: message,

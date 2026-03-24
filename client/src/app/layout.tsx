@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MaxVolt Electrical (Pvt) Ltd - The best way to power up",
+  title: "Tradkuserp - Electrical Company Management",
   description: "Solar Power Systems, Solar Pumps, Solar Geysers, House Wiring, Security Systems, Lighting Solutions - Bulawayo, Zimbabwe",
 };
 

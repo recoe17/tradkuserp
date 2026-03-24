@@ -17,7 +17,7 @@ function truncateText(text: string, maxLen: number): string {
 
 async function fetchLogoBuffer(): Promise<Buffer | null> {
   try {
-    const logoUrl = 'https://maxvolterp.vercel.app/logo.png';
+    const logoUrl = 'https://tradkuserp.vercel.app/logo.png';
     console.log('Fetching logo from:', logoUrl);
     const response = await fetch(logoUrl, {
       headers: { 'Accept': 'image/*' },
@@ -57,10 +57,9 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
         doc.image(logoBuffer, 50, 20, { width: 120, height: 40 });
       } else {
         doc.fillColor(RED_COLOR).fontSize(18).font('Helvetica-Bold')
-          .text('MAXVOLT', 50, 25, { continued: true })
-          .fillColor(DARK_GRAY).text(' ELECTRICAL');
+          .text('TRADKUSERP', 50, 25, NO_BREAK);
         doc.fillColor(LIGHT_GRAY).fontSize(F.small).font('Helvetica')
-          .text('The best way to power up', 50, 48, NO_BREAK);
+          .text(COMPANY.tagline, 50, 48, NO_BREAK);
       }
 
       // Quotation Title - fixed positions only
@@ -261,8 +260,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       } else {
         doc.moveDown();
         doc.fillColor(RED_COLOR).fontSize(18).font('Helvetica-Bold')
-          .text('MAXVOLT', 50, 25, { continued: true })
-          .fillColor(DARK_GRAY).text(' ELECTRICAL');
+          .text('TRADKUSERP', 50, 25, NO_BREAK);
         doc.fillColor(LIGHT_GRAY).fontSize(F.small).font('Helvetica')
           .text('The best way to power up', 50, 48);
         doc.moveDown(2);
@@ -471,8 +469,7 @@ export async function generateReceiptPDF(payment: any): Promise<Buffer> {
       } else {
         doc.moveDown();
         doc.fillColor(RED_COLOR).fontSize(18).font('Helvetica-Bold')
-          .text('MAXVOLT', 50, 25, { continued: true })
-          .fillColor(DARK_GRAY).text(' ELECTRICAL');
+          .text('TRADKUSERP', 50, 25, NO_BREAK);
         doc.fillColor(LIGHT_GRAY).fontSize(F.body).font('Helvetica')
           .text('The best way to power up', 50, 52);
         doc.moveDown(2);

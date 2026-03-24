@@ -54,11 +54,11 @@ export async function POST(
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: invoice.customer.email,
-      subject: `Invoice ${invoice.invoiceNumber} - MaxVolt Electrical`,
+      subject: `Invoice ${invoice.invoiceNumber} - Tradkuserp`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background-color: #DC2626; padding: 20px; text-align: center;">
-            <h1 style="color: white; margin: 0;">MaxVolt Electrical</h1>
+            <h1 style="color: white; margin: 0;">Tradkuserp</h1>
           </div>
           <div style="padding: 20px;">
             <h2>Dear ${invoice.customer.name},</h2>
@@ -67,7 +67,7 @@ export async function POST(
             <p><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString()}</p>
             ${Number(invoice.balance) > 0 ? `<p><strong>Balance Due:</strong> ${formatAmount(Number(invoice.balance), invoice.currency || 'USD')}</p>` : ''}
             <p>Please make payment by the due date.</p>
-            <p>Best regards,<br><strong>MaxVolt Electrical (Pvt) Ltd</strong><br>Bulawayo, Zimbabwe</p>
+            <p>Best regards,<br><strong>Tradkuserp</strong><br>Bulawayo, Zimbabwe</p>
           </div>
           <div style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280;">
             Solar Power Systems | Solar Pumps | Solar Geysers | House Wiring | Security Systems

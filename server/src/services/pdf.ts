@@ -14,7 +14,7 @@ export async function generateQuotationPDF(quotation: any): Promise<Buffer> {
       doc.on('error', reject);
 
       // Header
-      doc.fontSize(20).text(process.env.COMPANY_NAME || 'MaxVolt Electrical', { align: 'center' });
+      doc.fontSize(20).text(process.env.COMPANY_NAME || 'Tradkuserp', { align: 'center' });
       doc.moveDown();
       doc.fontSize(12).text('QUOTATION', { align: 'center', underline: true });
       doc.moveDown(2);
@@ -142,7 +142,7 @@ export async function generateInvoicePDF(invoice: any): Promise<Buffer> {
       doc.on('error', reject);
 
       // Header
-      doc.fontSize(20).text(process.env.COMPANY_NAME || 'MaxVolt Electrical', { align: 'center' });
+      doc.fontSize(20).text(process.env.COMPANY_NAME || 'Tradkuserp', { align: 'center' });
       doc.moveDown();
       doc.fontSize(12).text('INVOICE', { align: 'center', underline: true });
       doc.moveDown(2);

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push && prisma generate && next build",
+    "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint"
@@ -20,6 +20,7 @@
     "lucide-react": "^0.469.0",
     "next": "^15.5.12",
     "nodemailer": "^6.9.16",
+    "twilio": "^4.20.0",
     "pdfkit": "^0.17.2",
     "prisma": "^5.22.0",
     "react": "^18.3.1",

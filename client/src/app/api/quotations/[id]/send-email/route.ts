@@ -55,11 +55,11 @@ export async function POST(
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: quotation.customer.email,
-      subject: `Quotation ${quotation.quotationNumber} - MaxVolt Electrical`,
+      subject: `Quotation ${quotation.quotationNumber} - Tradkuserp`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background-color: #DC2626; padding: 20px; text-align: center;">
-            <h1 style="color: white; margin: 0;">MaxVolt Electrical</h1>
+            <h1 style="color: white; margin: 0;">Tradkuserp</h1>
           </div>
           <div style="padding: 20px;">
             <h2>Dear ${quotation.customer.name},</h2>
@@ -67,7 +67,7 @@ export async function POST(
             <p><strong>Total Amount:</strong> ${formatAmount(Number(quotation.total), quotation.currency || 'USD')}</p>
             ${quotation.validUntil ? `<p><strong>Valid Until:</strong> ${new Date(quotation.validUntil).toLocaleDateString()}</p>` : ''}
             <p>If you have any questions, please don't hesitate to contact us.</p>
-            <p>Best regards,<br><strong>MaxVolt Electrical (Pvt) Ltd</strong><br>Bulawayo, Zimbabwe</p>
+            <p>Best regards,<br><strong>Tradkuserp</strong><br>Bulawayo, Zimbabwe</p>
           </div>
           <div style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280;">
             Solar Power Systems | Solar Pumps | Solar Geysers | House Wiring | Security Systems

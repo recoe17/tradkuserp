@@ -74,7 +74,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 w-64 flex flex-col bg-white shadow-xl">
           <div className="flex-shrink-0 flex h-20 items-center justify-between px-4 border-b bg-white">
-            <Image src="/logo.png" alt="MaxVolt Electrical" width={150} height={50} className="object-contain" />
+            <Image src="/logo.png" alt="Tradkuserp" width={150} height={50} className="object-contain" />
             <button onClick={() => setSidebarOpen(false)} className="text-gray-500">
               <X className="h-6 w-6" />
             </button>
@@ -146,7 +146,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col lg:h-screen">
         <div className="flex flex-col h-full bg-white border-r border-gray-200 min-h-0">
           <div className="flex-shrink-0 flex h-20 items-center justify-center px-4 border-b bg-white">
-            <Image src="/logo.png" alt="MaxVolt Electrical" width={180} height={60} className="object-contain" />
+            <Image src="/logo.png" alt="Tradkuserp" width={180} height={60} className="object-contain" />
           </div>
           <nav className="flex-1 min-h-0 overflow-y-auto mt-4 px-2 space-y-1">
             <div className="mb-4 px-2" ref={createRef}>
@@ -229,7 +229,7 @@ export default function Layout({ children }: LayoutProps) {
             <Menu className="h-6 w-6" />
           </button>
           <div className="flex flex-1 items-center justify-center pr-10">
-            <Image src="/logo.png" alt="MaxVolt" width={120} height={40} className="object-contain" />
+            <Image src="/logo.png" alt="Tradkuserp" width={120} height={40} className="object-contain" />
           </div>
         </div>
 

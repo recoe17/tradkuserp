@@ -1,27 +1,22 @@
 const sharp = require('sharp');
 const path = require('path');
-const fs = require('fs');
 
 async function generateFavicon() {
   const logoPath = path.join(__dirname, '../public/logo.png');
   const appDir = path.join(__dirname, '../src/app');
 
-  const sizes = [
-    { size: 32, name: 'icon.png' },
-    { size: 16, name: 'favicon.ico' }, // will save as PNG, Next.js uses icon.png
-  ];
+  const metadata = await sharp(logoPath).metadata();
+  const { width, height } = metadata;
+  // Crop to top ~55% to get just the TR monogram (avoid text below)
+  const cropHeight = Math.floor(height * 0.55);
 
-  // Create 32x32 icon for Next.js (primary favicon)
-  await sharp(logoPath)
-    .resize(32, 32)
-    .png()
-    .toFile(path.join(appDir, 'icon.png'));
+  const monogram = sharp(logoPath).extract({ left: 0, top: 0, width, height: cropHeight });
+
+  // Create 32x32 favicon (monogram only - scales better at small sizes)
+  await monogram.clone().resize(32, 32).png().toFile(path.join(appDir, 'icon.png'));
 
   // Create apple-icon (180x180 for Apple devices)
-  await sharp(logoPath)
-    .resize(180, 180)
-    .png()
-    .toFile(path.join(appDir, 'apple-icon.png'));
+  await monogram.clone().resize(180, 180).png().toFile(path.join(appDir, 'apple-icon.png'));
 
   console.log('Favicon generated: app/icon.png, app/apple-icon.png');
 }

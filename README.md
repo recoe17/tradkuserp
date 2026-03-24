@@ -1,4 +1,4 @@
-# MaxVolt - Electrical Company Management System
+# Tradkuserp - Electrical Company Management System
 
 A comprehensive management system for electrical companies to manage jobs, quotations, invoices, customers, and finances.
 

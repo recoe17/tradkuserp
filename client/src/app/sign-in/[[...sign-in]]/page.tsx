@@ -6,7 +6,7 @@ export default function SignInPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-900">
-            Sign in to MaxVolt
+            Sign in to Tradkuserp
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Electrical Company Management System

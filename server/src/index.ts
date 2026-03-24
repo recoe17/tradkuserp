@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'MaxVolt API is running' });
+  res.json({ status: 'ok', message: 'Tradkuserp API is running' });
 });
 
 // Routes

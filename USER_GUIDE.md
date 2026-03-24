@@ -1,4 +1,4 @@
-# MaxVolt ERP – Quick User Guide
+# Tradkuserp – Quick User Guide
 
 ## How to Make a Receipt
 

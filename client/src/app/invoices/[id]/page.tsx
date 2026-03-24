@@ -327,7 +327,7 @@ export default function InvoiceViewPage() {
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <div className="flex justify-between items-start">
               <div>
-                <img src="/logo.png" alt="MaxVolt Logo" className="h-16 mb-2" />
+                <img src="/logo.png" alt="Tradkuserp Logo" className="h-16 mb-2" />
                 <p className="text-sm text-gray-600">The best way to power up</p>
                 <p className="text-sm text-gray-600 mt-1">{COMPANY.address}</p>
                 <p className="text-sm text-gray-600">TIN: {COMPANY.tin}</p>
